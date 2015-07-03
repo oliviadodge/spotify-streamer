@@ -2,6 +2,9 @@ package com.example.android.spotifystreamer;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -38,7 +41,7 @@ public class MainActivityFragment extends Fragment {
     List<Artist> mArtists;
     ListView mListView;
     Context mContext;
-    public static final String TAG = "MainActivityFragment";
+    public static final String ARTIST_ID_EXTRA = "artist_id";
 
 
     public MainActivityFragment() {
@@ -60,15 +63,24 @@ public class MainActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         final EditText editTextSearch = (EditText) rootView.findViewById(R.id.edittext_search_artist);
-
         editTextSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_SEARCH) {
                     mSearchTerm = textView.getText().toString();
-                    FetchArtistsTask artistsTask = new FetchArtistsTask();
-                    artistsTask.execute(mSearchTerm);
-                    // TODO add code to put results of search into a singleton so it can be retained on rotation
+
+
+                    ConnectivityManager connMgr = (ConnectivityManager)
+                            getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                    NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+                    if (networkInfo != null && networkInfo.isConnected()) {
+                        FetchArtistsTask artistsTask = new FetchArtistsTask();
+                        artistsTask.execute(mSearchTerm);
+                    } else {
+                        Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+
                     InputMethodManager imm = (InputMethodManager) mContext.getSystemService(
                             Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(editTextSearch.getWindowToken(), 0);
@@ -82,7 +94,10 @@ public class MainActivityFragment extends Fragment {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //TODO Add code to start a new fragment with top 10 tracks of this artist.
+                Artist artist = mArtistsAdapter.getItem(position);
+                Intent i = new Intent(getActivity(), TopTracksActivity.class);
+                i.putExtra(ARTIST_ID_EXTRA, artist.id);
+                startActivity(i);
             }
         });
         setUpAdapter();
@@ -92,11 +107,6 @@ public class MainActivityFragment extends Fragment {
 
     void setUpAdapter() {
         if (getActivity() == null || mListView == null) return;
-
-        if ((mArtists != null) &&(mArtists.size() == 0)){
-            Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_artist_found), Toast.LENGTH_LONG);
-            toast.show();
-        }
 
         if (mArtists != null) {
             mArtistsAdapter = new ArtistsAdapter(mArtists);
@@ -125,11 +135,14 @@ public class MainActivityFragment extends Fragment {
             ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_image);
             List<kaaes.spotify.webapi.android.models.Image> artistImages = artist.images;
 
+
             if (artistImages.size() > 0) {
-                String url = artistImages.get(0).url;
-                Picasso.with(getActivity()).load(url).resize(100, 100).centerCrop().into(imageView);
+              String url = artistImages.get(0).url;
+                Picasso.with(getActivity()).load(url).placeholder(R.drawable.default_placeholder).error(R.drawable.default_placeholder)
+                        .resize(200, 200).centerCrop().into(imageView);
             } else {
-                Picasso.with(getActivity()).load("http://placehold.it/100x100").into(imageView);
+                Picasso.with(getActivity()).load(R.drawable.default_placeholder)
+                        .resize(200, 200).centerCrop().into(imageView);
             }
 
             TextView nameTextView =
@@ -143,7 +156,6 @@ public class MainActivityFragment extends Fragment {
 
     public class FetchArtistsTask extends AsyncTask<String, Void, List<Artist>> {
 
-        private static final String TAG = "FetchArtistsTask";
 
 
         @Override
@@ -164,6 +176,11 @@ public class MainActivityFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Artist> artists) {
             mArtists = artists;
+
+            if (mArtists.size() == 0){
+                Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_artist_found), Toast.LENGTH_LONG);
+                toast.show();
+            }
             ArtistLab.get(getActivity()).setArtists(mArtists);
             setUpAdapter();
         }

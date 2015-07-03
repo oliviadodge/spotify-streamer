@@ -11,8 +11,6 @@ import kaaes.spotify.webapi.android.models.Artist;
  */
 public class ArtistLab {
 
-    private static final String TAG = "ArtistLab";
-
     private List<Artist> mArtists;
 
     private static ArtistLab sArtistLab;

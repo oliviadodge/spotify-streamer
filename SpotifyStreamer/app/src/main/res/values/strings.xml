@@ -1,11 +1,16 @@
 <resources>
     <string name="app_name">Spotify Streamer</string>
-    <string name="action_settings">Settings</string>
 
 
     <!--Toasts-->
 
     <string name="toast_no_artist_found">No artists found that match the given search term.</string>
+    <string name="toast_no_track_found">No top tracks found for that artist.</string>
+    <string name="toast_no_network_found">Can\'t find a network connection.</string>
+
+    <!--Titles-->
+
+    <string name="title_activity_top_tracks">Top 10 Tracks</string>
 
 
 </resources>
