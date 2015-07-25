@@ -45,4 +45,13 @@ public class TopTracksLab {
     public void setTopTracks(List<Track> toptracks) {
         mToptracks = toptracks;
     }
+
+    public Track getTrack(String spotifyId) {
+        for (Track t : mToptracks) {
+            if (t.id.equals(spotifyId)) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

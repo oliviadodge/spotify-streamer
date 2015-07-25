@@ -2,6 +2,7 @@ package com.example.android.spotifystreamer;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -31,6 +33,9 @@ import kaaes.spotify.webapi.android.models.Tracks;
  * A placeholder fragment containing a simple view.
  */
 public class TopTracksFragment extends Fragment {
+
+    public static final String TRACK_ID_EXTRA = "track_id";
+
 
     TracksAdapter mTracksAdapter;
     String mArtistId;
@@ -70,6 +75,15 @@ public class TopTracksFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
         mListView = (ListView) rootView.findViewById(R.id.listview_top_tracks);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Track track = mTracksAdapter.getItem(position);
+                Intent i = new Intent(getActivity(), TrackPlayerActivity.class);
+                i.putExtra(TRACK_ID_EXTRA, track.id);
+                startActivity(i);
+            }
+        });
         setUpAdapter();
 
         return rootView;

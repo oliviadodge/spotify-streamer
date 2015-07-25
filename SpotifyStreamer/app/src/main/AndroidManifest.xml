@@ -22,10 +22,18 @@
         <activity
             android:name=".TopTracksActivity"
             android:label="@string/title_activity_top_tracks" >
-            <meta-data android:name="android.support.PARENT_ACTIVITY"
-                       android:value=".MainActivity"/>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
         </activity>
-
+        <activity
+            android:name=".TrackPlayerActivity"
+            android:label="@string/title_activity_track_player"
+            android:parentActivityName=".TopTracksActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.android.spotifystreamer.TopTracksActivity" />
+        </activity>
     </application>
 
 </manifest>

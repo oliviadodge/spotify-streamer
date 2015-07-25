@@ -11,6 +11,21 @@
     <!--Titles-->
 
     <string name="title_activity_top_tracks">Top 10 Tracks</string>
+    <string name="title_activity_track_player">TrackPlayerActivity</string>
+    <string name="action_settings">Settings</string>
+
+    <!--TopTracksFragment-->
+
+    <string name="artist">No Name</string>
+    <string name="album">Untitled</string>
+    <string name="song">Untitled</string>
+
+    <!--Image Button Content Descriptions-->
+
+    <string name="track_player_previous">Previous Track</string>
+    <string name="track_player_next">Next Track</string>
+    <string name="track_player_play">Play Track</string>
+    <string name="track_player_pause">Pause Track</string>
 
 
 </resources>
