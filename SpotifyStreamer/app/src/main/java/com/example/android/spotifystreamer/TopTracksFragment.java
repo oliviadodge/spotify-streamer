@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +36,7 @@ import kaaes.spotify.webapi.android.models.Tracks;
 public class TopTracksFragment extends Fragment {
 
     public static final String TRACK_ID_EXTRA = "track_id";
+    public static final String TAG = "TopTracksFragment";
 
 
     TracksAdapter mTracksAdapter;
@@ -49,22 +51,24 @@ public class TopTracksFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setRetainInstance(true);
+
         mArtistId = getActivity().getIntent().getStringExtra(MainActivityFragment.ARTIST_ID_EXTRA);
 
         ConnectivityManager connMgr = (ConnectivityManager)
                 getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
+
+        TopTracksLab topTracksLab = TopTracksLab.get(getActivity());
+        if (mArtistId.equals(topTracksLab.getArtistId())) {
+            mTopTracks = TopTracksLab.get(getActivity()).getTopTracks();
+        } else if (networkInfo != null && networkInfo.isConnected()) {
             FetchTopTracksTask fetchTopTracksTask = new FetchTopTracksTask();
             fetchTopTracksTask.execute(mArtistId);
         } else {
             Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
             toast.show();
-        }
-
-        TopTracksLab topTracksLab = TopTracksLab.get(getActivity());
-        if (mArtistId.equals(topTracksLab.getArtistId())) {
-            mTopTracks = TopTracksLab.get(getActivity()).getTopTracks();
         }
 
     }
@@ -79,9 +83,15 @@ public class TopTracksFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Track track = mTracksAdapter.getItem(position);
-                Intent i = new Intent(getActivity(), TrackPlayerActivity.class);
-                i.putExtra(TRACK_ID_EXTRA, track.id);
-                startActivity(i);
+                Log.i(TAG, "got a Track: " + track.name + " " + track.id);
+                if (track.preview_url != null) {
+                    Intent i = new Intent(getActivity(), TrackPlayerActivity.class);
+                    i.putExtra(TRACK_ID_EXTRA, track.id);
+                    startActivity(i);
+                } else {
+                    Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_track_not_playable), Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         });
         setUpAdapter();
@@ -120,7 +130,7 @@ public class TopTracksFragment extends Fragment {
 
 
             if (albumImages.size() > 0) {
-                String url = albumImages.get(0).url;
+                String url = albumImages.get((albumImages.size() - 1)).url;
                 Picasso.with(getActivity()).load(url).placeholder(R.drawable.default_placeholder).error(R.drawable.default_placeholder)
                         .resize(200, 200).centerCrop().into(imageView);
             } else {
