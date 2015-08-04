@@ -35,7 +35,7 @@ import com.example.android.spotifystreamer.data.DataContract.ArtistEntry;
     Note: This is not a complete set of tests of the Sunshine ContentProvider, but it does test
     that at least the basic functionality has been implemented correctly.
 
-    Students: Uncomment the tests in this class as you implement the functionality in your
+     Uncomment the tests in this class as you implement the functionality in your
     ContentProvider to make sure that you've implemented things reasonably correctly.
  */
 public class TestProvider extends AndroidTestCase {
@@ -48,10 +48,15 @@ public class TestProvider extends AndroidTestCase {
        deleted, so it cannot be used until the Query and Delete functions have been written
        in the ContentProvider.
 
-       Students: Replace the calls to deleteAllRecordsFromDB with this one after you have written
+        Replace the calls to deleteAllRecordsFromDB with this one after you have written
        the delete functionality in the ContentProvider.
      */
     public void deleteAllRecordsFromProvider() {
+        mContext.getContentResolver().delete(
+                DataContract.TopTrackEntry.CONTENT_URI,
+                null,
+                null
+        );
         mContext.getContentResolver().delete(
                 ArtistEntry.CONTENT_URI,
                 null,
@@ -62,8 +67,23 @@ public class TestProvider extends AndroidTestCase {
                 null,
                 null
         );
+        mContext.getContentResolver().delete(
+                SearchTermEntry.CONTENT_URI,
+                null,
+                null
+        );
 
         Cursor cursor = mContext.getContentResolver().query(
+                DataContract.TopTrackEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from top_track table during delete", 0, cursor.getCount());
+        cursor.close();
+
+        cursor = mContext.getContentResolver().query(
                 ArtistEntry.CONTENT_URI,
                 null,
                 null,
@@ -82,10 +102,20 @@ public class TestProvider extends AndroidTestCase {
         );
         assertEquals("Error: Records not deleted from country table during delete", 0, cursor.getCount());
         cursor.close();
+
+        cursor = mContext.getContentResolver().query(
+                SearchTermEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from search_term table during delete", 0, cursor.getCount());
+        cursor.close();
     }
 
     /*
-        Student: Refactor this function to use the deleteAllRecordsFromProvider functionality once
+         Refactor this function to use the deleteAllRecordsFromProvider functionality once
         you have implemented delete functionality there.
      */
     public void deleteAllRecords() {
@@ -102,7 +132,7 @@ public class TestProvider extends AndroidTestCase {
 
     /*
         This test checks to make sure that the content provider is registered correctly.
-        Students: Uncomment this test to make sure you've correctly registered the DataProvider.
+         Uncomment this test to make sure you've correctly registered the DataProvider.
      */
     public void testProviderRegistry() {
         PackageManager pm = mContext.getPackageManager();
@@ -130,7 +160,7 @@ public class TestProvider extends AndroidTestCase {
     /*
             This test doesn't touch the database.  It verifies that the ContentProvider returns
             the correct type for each type of URI that it can handle.
-            Students: Uncomment this test to verify that your implementation of GetType is
+             Uncomment this test to verify that your implementation of GetType is
             functioning correctly.
          */
     public void testGetType() {
@@ -141,24 +171,18 @@ public class TestProvider extends AndroidTestCase {
                 ArtistEntry.CONTENT_TYPE, type);
 
         String testSearchTerm = "Coldplay";
-        // content://com.example.android.sunshine.app/weather/94074
         type = mContext.getContentResolver().getType(
                 ArtistEntry.buildArtistWithSearchTermUri(testSearchTerm));
-        // vnd.android.cursor.dir/com.example.android.sunshine.app/weather
-        assertEquals("Error: the ArtistEntry CONTENT_URI with location should return ArtistEntry.CONTENT_TYPE",
+        assertEquals("Error: the ArtistEntry CONTENT_URI with search term should return ArtistEntry.CONTENT_TYPE",
                 ArtistEntry.CONTENT_TYPE, type);
 
         long testId = 10L;
-        // content://com.example.android.sunshine.app/weather/94074/20140612
         type = mContext.getContentResolver().getType(
                 ArtistEntry.buildArtistWithSearchTermAndArtistId(testSearchTerm, testId));
-        // vnd.android.cursor.item/com.example.android.sunshine.app/weather/1419120000
-        assertEquals("Error: the ArtistEntry CONTENT_URI with location and date should return ArtistEntry.CONTENT_ITEM_TYPE",
+        assertEquals("Error: the ArtistEntry CONTENT_URI with search term and date should return ArtistEntry.CONTENT_ITEM_TYPE",
                 ArtistEntry.CONTENT_ITEM_TYPE, type);
 
-        // content://com.example.android.sunshine.app/location/
         type = mContext.getContentResolver().getType(CountryEntry.CONTENT_URI);
-        // vnd.android.cursor.dir/com.example.android.sunshine.app/location
         assertEquals("Error: the CountryEntry CONTENT_URI should return CountryEntry.CONTENT_TYPE",
                 CountryEntry.CONTENT_TYPE, type);
     }
@@ -176,7 +200,6 @@ public class TestProvider extends AndroidTestCase {
 
         long searchTermRowId = TestUtilities.insertTestSearchTermValues(mContext);
 
-        // Fantastic.  Now that we have a location, add some weather!
         ContentValues artistValues = TestUtilities.createArtistValues(searchTermRowId);
 
         long artistRowId = db.insert(ArtistEntry.TABLE_NAME, null, artistValues);
@@ -199,7 +222,7 @@ public class TestProvider extends AndroidTestCase {
 
     /*
         This test uses the database directly to insert and then uses the ContentProvider to
-        read out the data.  Uncomment this test to see if your location queries are
+        read out the data.  Uncomment this test to see if your country queries are
         performing correctly.
      */
     public void testBasicCountryQuery() {
@@ -225,16 +248,16 @@ public class TestProvider extends AndroidTestCase {
         // Has the NotificationUri been set correctly? --- we can only test this easily against API
         // level 19 or greater because getNotificationUri was added in API level 19.
         if ( Build.VERSION.SDK_INT >= 19 ) {
-            assertEquals("Error: Location Query did not properly set NotificationUri",
+            assertEquals("Error: Country Query did not properly set NotificationUri",
                     countryCursor.getNotificationUri(), CountryEntry.CONTENT_URI);
         }
     }
 
     /*
         This test uses the provider to insert and then update the data. Uncomment this test to
-        see if your update location is functioning correctly.
+        see if your update country is functioning correctly.
      */
-    public void testUpdateLocation() {
+    public void testUpdateCountry() {
         // Create a new map of values, where column names are the keys
         ContentValues values = TestUtilities.createTestCountryValues();
 
@@ -252,10 +275,10 @@ public class TestProvider extends AndroidTestCase {
 
         // Create a cursor with observer to make sure that the content provider is notifying
         // the observers as expected
-        Cursor locationCursor = mContext.getContentResolver().query(CountryEntry.CONTENT_URI, null, null, null, null);
+        Cursor countryCursor = mContext.getContentResolver().query(CountryEntry.CONTENT_URI, null, null, null, null);
 
         TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
-        locationCursor.registerContentObserver(tco);
+        countryCursor.registerContentObserver(tco);
 
         int count = mContext.getContentResolver().update(
                 CountryEntry.CONTENT_URI, updatedValues, CountryEntry._ID + "= ?",
@@ -264,12 +287,12 @@ public class TestProvider extends AndroidTestCase {
 
         // Test to make sure our observer is called.  If not, we throw an assertion.
         //
-        // Students: If your code is failing here, it means that your content provider
+        //  If your code is failing here, it means that your content provider
         // isn't calling getContext().getContentResolver().notifyChange(uri, null);
         tco.waitForNotificationOrFail();
 
-        locationCursor.unregisterContentObserver(tco);
-        locationCursor.close();
+        countryCursor.unregisterContentObserver(tco);
+        countryCursor.close();
 
         // A cursor is your primary interface to the query results.
         Cursor cursor = mContext.getContentResolver().query(
@@ -280,7 +303,7 @@ public class TestProvider extends AndroidTestCase {
                 null    // sort order
         );
 
-        TestUtilities.validateCursor("testUpdateLocation.  Error validating location entry update.",
+        TestUtilities.validateCursor("testUpdateCountry.  Error validating country entry update.",
                 cursor, updatedValues);
 
         cursor.close();
@@ -289,7 +312,7 @@ public class TestProvider extends AndroidTestCase {
 
     // Make sure we can still delete after adding/updating stuff
     //
-    // Student: Uncomment this test after you have completed writing the insert functionality
+    //  Uncomment this test after you have completed writing the insert functionality
     // in your provider.  It relies on insertions with testInsertReadProvider, so insert and
     // query functionality must also be complete before this test can be used.
     public void testInsertReadProvider() {
@@ -300,7 +323,7 @@ public class TestProvider extends AndroidTestCase {
         mContext.getContentResolver().registerContentObserver(SearchTermEntry.CONTENT_URI, true, tco);
         Uri searchTermUri = mContext.getContentResolver().insert(SearchTermEntry.CONTENT_URI, testValues);
 
-        // Did our content observer get called?  Students:  If this fails, your insert location
+        // Did our content observer get called?    If this fails, your insert search term
         // isn't calling getContext().getContentResolver().notifyChange(uri, null);
         tco.waitForNotificationOrFail();
         mContext.getContentResolver().unregisterContentObserver(tco);
@@ -322,10 +345,9 @@ public class TestProvider extends AndroidTestCase {
                 null  // sort order
         );
 
-        TestUtilities.validateCursor("testInsertReadProvider. Error validating CountryEntry.",
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating SearchTermEntry.",
                 cursor, testValues);
 
-        // Fantastic.  Now that we have a location, add some weather!
         ContentValues artistValues = TestUtilities.createArtistValues(searchTermRowId);
         // The TestContentObserver is a one-shot class
         tco = TestUtilities.getTestContentObserver();
@@ -336,7 +358,7 @@ public class TestProvider extends AndroidTestCase {
                 .insert(ArtistEntry.CONTENT_URI, artistValues);
         assertTrue(artistInsertUri != null);
 
-        // Did our content observer get called?  Students:  If this fails, your insert weather
+        // Did our content observer get called?    If this fails, your insert weather
         // in your ContentProvider isn't calling
         // getContext().getContentResolver().notifyChange(uri, null);
         tco.waitForNotificationOrFail();
@@ -354,11 +376,8 @@ public class TestProvider extends AndroidTestCase {
         TestUtilities.validateCursor("testInsertReadProvider. Error validating ArtistEntry insert.",
                 artistCursor, artistValues);
 
-        // Add the location values in with the weather data so that we can make
-        // sure that the join worked and we actually get all the values back
         artistValues.putAll(testValues);
 
-        // Get the joined Weather and Location data
         artistCursor = mContext.getContentResolver().query(
                 ArtistEntry.buildArtistWithSearchTermUri(TestUtilities.TEST_SEARCH_TERM),
                 null, // leaving "columns" null just returns all the columns.
@@ -366,10 +385,9 @@ public class TestProvider extends AndroidTestCase {
                 null, // values for "where" clause
                 null  // sort order
         );
-        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Weather and Location Data.",
+        TestUtilities.validateCursor("testInsertReadProvider.  Error validating joined Artist and SearchTerm Data.",
                 artistCursor, artistValues);
 
-        // Get the joined Weather and Location data with a start date
         artistCursor = mContext.getContentResolver().query(
                 ArtistEntry.buildArtistWithSearchTermAndArtistId(
                         TestUtilities.TEST_SEARCH_TERM, TestUtilities.TEST_ARTIST_ROW_ID),
@@ -383,30 +401,28 @@ public class TestProvider extends AndroidTestCase {
 
     // Make sure we can still delete after adding/updating stuff
     //
-    // Student: Uncomment this test after you have completed writing the delete functionality
+    //  Uncomment this test after you have completed writing the delete functionality
     // in your provider.  It relies on insertions with testInsertReadProvider, so insert and
     // query functionality must also be complete before this test can be used.
     public void testDeleteRecords() {
         testInsertReadProvider();
 
-        // Register a content observer for our location delete.
-        TestUtilities.TestContentObserver locationObserver = TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(CountryEntry.CONTENT_URI, true, locationObserver);
+        TestUtilities.TestContentObserver searchTermObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(SearchTermEntry.CONTENT_URI, true, searchTermObserver);
 
-        // Register a content observer for our weather delete.
-        TestUtilities.TestContentObserver weatherObserver = TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(ArtistEntry.CONTENT_URI, true, weatherObserver);
+        TestUtilities.TestContentObserver artistObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(ArtistEntry.CONTENT_URI, true, artistObserver);
 
         deleteAllRecordsFromProvider();
 
-        // Students: If either of these fail, you most-likely are not calling the
+        //  If either of these fail, you most-likely are not calling the
         // getContext().getContentResolver().notifyChange(uri, null); in the ContentProvider
         // delete.  (only if the insertReadProvider is succeeding)
-        locationObserver.waitForNotificationOrFail();
-        weatherObserver.waitForNotificationOrFail();
+        searchTermObserver.waitForNotificationOrFail();
+        artistObserver.waitForNotificationOrFail();
 
-        mContext.getContentResolver().unregisterContentObserver(locationObserver);
-        mContext.getContentResolver().unregisterContentObserver(weatherObserver);
+        mContext.getContentResolver().unregisterContentObserver(searchTermObserver);
+        mContext.getContentResolver().unregisterContentObserver(artistObserver);
     }
 
 
@@ -428,12 +444,11 @@ public class TestProvider extends AndroidTestCase {
         return returnContentValues;
     }
 
-    // Student: Uncomment this test after you have completed writing the BulkInsert functionality
+    //  Uncomment this test after you have completed writing the BulkInsert functionality
     // in your provider.  Note that this test will work with the built-in (default) provider
     // implementation, which just inserts records one-at-a-time, so really do implement the
     // BulkInsert ContentProvider function.
     public void testBulkInsert() {
-        // first, let's create a location value
         ContentValues testValues = TestUtilities.createTestSearchTermValues();
         Uri searchTermUri = mContext.getContentResolver().insert(SearchTermEntry.CONTENT_URI, testValues);
         long searchTermRowId = ContentUris.parseId(searchTermUri);
@@ -467,7 +482,7 @@ public class TestProvider extends AndroidTestCase {
 
         int insertCount = mContext.getContentResolver().bulkInsert(ArtistEntry.CONTENT_URI, bulkInsertContentValues);
 
-        // Students:  If this fails, it means that you most-likely are not calling the
+        //   If this fails, it means that you most-likely are not calling the
         // getContext().getContentResolver().notifyChange(uri, null); in your BulkInsert
         // ContentProvider method.
         artistObserver.waitForNotificationOrFail();

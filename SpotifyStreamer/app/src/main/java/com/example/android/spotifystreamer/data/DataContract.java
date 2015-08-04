@@ -175,10 +175,6 @@ public class DataContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildTrackWithCountry(String countrySetting) {
-            return CONTENT_URI.buildUpon().appendPath(countrySetting).build();
-        }
-
         public static Uri buildTrackWithCountryAndArtistId(String countrySetting, long artistId) {
             return CONTENT_URI.buildUpon().appendPath(countrySetting)
                     .appendPath(Long.toString(artistId)).build();

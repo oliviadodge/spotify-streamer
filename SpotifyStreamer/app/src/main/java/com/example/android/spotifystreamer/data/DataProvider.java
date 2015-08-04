@@ -33,8 +33,8 @@ public class DataProvider extends ContentProvider {
     static final int ARTIST_WITH_SEARCH_TERM = 101;
     static final int ARTIST_WITH_SEARCH_TERM_AND_ARTIST_ID = 102;
     static final int TOP_TRACKS = 200;
-    static final int TOP_TRACKS_WITH_ARTIST_AND_COUNTRY = 201;
-    static final int TOP_TRACK_WITH_ARTIST_COUNTRY_AND_TRACK_ID = 202;
+    static final int TOP_TRACKS_WITH_COUNTRY_AND_ARTIST_ID = 201;
+    static final int TOP_TRACK_WITH_COUNTRY_ARTIST_AND_TRACK_ID = 202;
     static final int COUNTRY = 300;
     static final int SEARCH_TERM = 400;
 
@@ -129,7 +129,7 @@ public class DataProvider extends ContentProvider {
         );
     }
 
-    private Cursor getTracksByArtistAndCountry(Uri uri, String[] projection, String sortOrder) {
+    private Cursor getTracksByCountryAndArtist(Uri uri, String[] projection, String sortOrder) {
         String countrySetting = DataContract.TopTrackEntry.getCountrySettingFromUri(uri);
         long artistId = DataContract.TopTrackEntry.getArtistIdFromUri(uri);
 
@@ -150,7 +150,7 @@ public class DataProvider extends ContentProvider {
         );
     }
 
-    private Cursor getTrackByArtistCountryAndTrackId(Uri uri, String[] projection, String sortOrder) {
+    private Cursor getTrackByCountryArtistAndTrackId(Uri uri, String[] projection, String sortOrder) {
         String countrySetting = DataContract.TopTrackEntry.getCountrySettingFromUri(uri);
         long artistId = DataContract.TopTrackEntry.getArtistIdFromUri(uri);
         long trackId = DataContract.TopTrackEntry.getTrackIdFromUri(uri);
@@ -166,14 +166,12 @@ public class DataProvider extends ContentProvider {
     }
 
     /*
-        Students: Here is where you need to create the UriMatcher. This UriMatcher will
-        match each URI to the ARTIST_WITH_ARTIST_ID, TOP_TRACKS_WITH_ARTIST_AND_COUNTRY, TOP_TRACK_WITH_ARTIST_COUNTRY_AND_TRACK_ID,
+        Here is where you need to create the UriMatcher. This UriMatcher will
+        match each URI to the ARTIST_WITH_ARTIST_ID, TOP_TRACKS_WITH_COUNTRY_AND_ARTIST_ID, TOP_TRACK_WITH_COUNTRY_ARTIST_AND_TRACK_ID,
         and COUNTRY integer constants defined above.  You can test this by uncommenting the
         testUriMatcher test within TestUriMatcher.
      */
     static UriMatcher buildUriMatcher() {
-        // I know what you're thinking.  Why create a UriMatcher when you can use regular
-        // expressions instead?  Because you're not crazy, that's why.
 
         // All paths added to the UriMatcher have a corresponding code to return when a match is
         // found.  The code passed into the constructor represents the code to return for the root
@@ -186,8 +184,8 @@ public class DataProvider extends ContentProvider {
         matcher.addURI(authority, DataContract.PATH_ARTIST + "/*", ARTIST_WITH_SEARCH_TERM);
         matcher.addURI(authority, DataContract.PATH_ARTIST + "/*/#", ARTIST_WITH_SEARCH_TERM_AND_ARTIST_ID);
         matcher.addURI(authority, DataContract.PATH_TRACK, TOP_TRACKS);
-        matcher.addURI(authority, DataContract.PATH_TRACK + "/*", TOP_TRACKS_WITH_ARTIST_AND_COUNTRY);
-        matcher.addURI(authority, DataContract.PATH_TRACK + "/*/#", TOP_TRACK_WITH_ARTIST_COUNTRY_AND_TRACK_ID);
+        matcher.addURI(authority, DataContract.PATH_TRACK + "/*/#", TOP_TRACKS_WITH_COUNTRY_AND_ARTIST_ID);
+        matcher.addURI(authority, DataContract.PATH_TRACK + "/*/#/#", TOP_TRACK_WITH_COUNTRY_ARTIST_AND_TRACK_ID);
 
         matcher.addURI(authority, DataContract.PATH_COUNTRY, COUNTRY);
         matcher.addURI(authority, DataContract.PATH_SEARCH_TERM, SEARCH_TERM);
@@ -195,7 +193,7 @@ public class DataProvider extends ContentProvider {
     }
 
     /*
-        Students: We've coded this for you.  We just create a new DataDbHelper for later use
+        We've coded this for you.  We just create a new DataDbHelper for later use
         here.
      */
     @Override
@@ -205,7 +203,7 @@ public class DataProvider extends ContentProvider {
     }
 
     /*
-        Students: Here's where you'll code the getType function that uses the UriMatcher.  You can
+        Here's where you'll code the getType function that uses the UriMatcher.  You can
         test this by uncommenting testGetType in TestProvider.
 
      */
@@ -216,10 +214,9 @@ public class DataProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            // Student: Uncomment and fill out these two cases
-            case TOP_TRACK_WITH_ARTIST_COUNTRY_AND_TRACK_ID:
+            case TOP_TRACK_WITH_COUNTRY_ARTIST_AND_TRACK_ID:
                 return DataContract.TopTrackEntry.CONTENT_ITEM_TYPE;
-            case TOP_TRACKS_WITH_ARTIST_AND_COUNTRY:
+            case TOP_TRACKS_WITH_COUNTRY_AND_ARTIST_ID:
                 return DataContract.TopTrackEntry.CONTENT_TYPE;
             case TOP_TRACKS:
                 return DataContract.TopTrackEntry.CONTENT_TYPE;
@@ -247,14 +244,14 @@ public class DataProvider extends ContentProvider {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
             // "track/*/*"
-            case TOP_TRACK_WITH_ARTIST_COUNTRY_AND_TRACK_ID:
+            case TOP_TRACK_WITH_COUNTRY_ARTIST_AND_TRACK_ID:
             {
-                retCursor = getTrackByArtistCountryAndTrackId(uri, projection, sortOrder);
+                retCursor = getTrackByCountryArtistAndTrackId(uri, projection, sortOrder);
                 break;
             }
-            // "track/*"
-            case TOP_TRACKS_WITH_ARTIST_AND_COUNTRY: {
-                retCursor = getTracksByArtistAndCountry(uri, projection, sortOrder);
+            // "track/*/#"
+            case TOP_TRACKS_WITH_COUNTRY_AND_ARTIST_ID: {
+                retCursor = getTracksByCountryAndArtist(uri, projection, sortOrder);
                 break;
             }
             // "track"
@@ -327,9 +324,7 @@ public class DataProvider extends ContentProvider {
         return retCursor;
     }
 
-    /*
-        Student: Add the ability to insert Locations to the implementation of this function.
-     */
+         
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
@@ -373,6 +368,7 @@ public class DataProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
+        db.close();
         return returnUri;
     }
 

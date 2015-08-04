@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 /*
-    Students: These are functions and some test data to make it easier to test your database and
+    These are functions and some test data to make it easier to test your database and
     Content Provider.  Note that you'll want your DataContract class to exactly match the one
     in our solution to use these as-given.
  */
@@ -53,9 +53,7 @@ public class TestUtilities extends AndroidTestCase {
         }
     }
 
-    /*
-        Students: Use this to create some default weather values for your database tests.
-     */
+
     static ContentValues createArtistValues(long searchTermId) {
         ContentValues artistValues  = new ContentValues();
         artistValues.put(DataContract.ArtistEntry.COLUMN_SEARCH_KEY, searchTermId);
@@ -112,7 +110,7 @@ public class TestUtilities extends AndroidTestCase {
     }
 
     /*
-        Students: You can uncomment this function once you have finished creating the
+        You can uncomment this function once you have finished creating the
         CountryEntry part of the DataContract as well as the DataDbHelper.
      */
     static long insertTestSearchTermValues(Context context) {
@@ -121,13 +119,13 @@ public class TestUtilities extends AndroidTestCase {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues testValues = TestUtilities.createTestSearchTermValues();
 
-        long locationRowId;
-        locationRowId = db.insert(DataContract.SearchTermEntry.TABLE_NAME, null, testValues);
+        long searchTermRowId;
+        searchTermRowId = db.insert(DataContract.SearchTermEntry.TABLE_NAME, null, testValues);
 
         // Verify we got a row back.
-        assertTrue("Error: Failure to insert Test Search Term Values", locationRowId != -1);
+        assertTrue("Error: Failure to insert Test Search Term Values", searchTermRowId != -1);
 
-        return locationRowId;
+        return searchTermRowId;
     }
 
     /*

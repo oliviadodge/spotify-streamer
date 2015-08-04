@@ -28,13 +28,13 @@ public class TestDataContract extends AndroidTestCase {
     private static final String TEST_SEARCH_TERM = "/Band of Horses";
 
 
-    public void testBuildWeatherLocation() {
+    public void testBuildArtistWithSearchTerm() {
         Uri uri = DataContract.ArtistEntry.buildArtistWithSearchTermUri(TEST_SEARCH_TERM);
         assertNotNull("Error: Null Uri returned from buildArtistWithSearchTermUri",
                 uri);
         assertEquals("Error: Search term not properly appended to the end of the Uri",
                 TEST_SEARCH_TERM, uri.getLastPathSegment());
-        assertEquals("Error: Weather location Uri doesn't match our expected result",
+        assertEquals("Error: Artist with Search Term Uri doesn't match our expected result",
                 uri.toString(),
                 "content://com.example.android.spotifystreamer/artist/%2FBand%20of%20Horses");
     }

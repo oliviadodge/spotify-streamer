@@ -29,29 +29,27 @@ public class TestUriMatcher extends AndroidTestCase {
     private static final String SEARCH_TERM = "Coldplay";
     private static final long TEST_ID = 10L;
 
-    // content://com.example.android.sunshine.app/weather"
     private static final Uri TEST_ARTIST_DIR = DataContract.ArtistEntry.CONTENT_URI;
     private static final Uri TEST_ARTIST_WITH_SEARCH_TERM_DIR = DataContract.ArtistEntry.buildArtistWithSearchTermUri(SEARCH_TERM);
     private static final Uri TEST_ARTIST_WITH_SEARCH_TERM_AND_ARTIST_ID =
             DataContract.ArtistEntry.buildArtistWithSearchTermAndArtistId(SEARCH_TERM, TEST_ID);
-    // content://com.example.android.sunshine.app/location"
     private static final Uri TEST_SEARCH_TERM_DIR = DataContract.SearchTermEntry.CONTENT_URI;
 
     /*
-        Students: This function tests that your UriMatcher returns the correct integer value
+        This function tests that your UriMatcher returns the correct integer value
         for each of the Uri types that our ContentProvider can handle.  Uncomment this when you are
         ready to test your UriMatcher.
      */
     public void testUriMatcher() {
         UriMatcher testMatcher = DataProvider.buildUriMatcher();
 
-        assertEquals("Error: The WEATHER URI was matched incorrectly.",
+        assertEquals("Error: The ARTIST URI was matched incorrectly.",
                 testMatcher.match(TEST_ARTIST_DIR), DataProvider.ARTISTS);
-        assertEquals("Error: The WEATHER WITH LOCATION URI was matched incorrectly.",
+        assertEquals("Error: The ARTIST WITH SEARCH TERM URI was matched incorrectly.",
                 testMatcher.match(TEST_ARTIST_WITH_SEARCH_TERM_DIR), DataProvider.ARTIST_WITH_SEARCH_TERM);
-        assertEquals("Error: The WEATHER WITH LOCATION AND DATE URI was matched incorrectly.",
+        assertEquals("Error: The ARTIST WITH SEARCH TERM AND ARTIST ID URI was matched incorrectly.",
                 testMatcher.match(TEST_ARTIST_WITH_SEARCH_TERM_AND_ARTIST_ID), DataProvider.ARTIST_WITH_SEARCH_TERM_AND_ARTIST_ID);
-        assertEquals("Error: The LOCATION URI was matched incorrectly.",
+        assertEquals("Error: The SEARCH TERM URI was matched incorrectly.",
                 testMatcher.match(TEST_SEARCH_TERM_DIR), DataProvider.SEARCH_TERM);
     }
 }
