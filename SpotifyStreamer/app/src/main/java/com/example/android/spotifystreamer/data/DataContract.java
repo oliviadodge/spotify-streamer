@@ -117,12 +117,18 @@ public class DataContract {
         // Search term as a foreign key.
         public static final String COLUMN_SEARCH_KEY = "search_term_id";
 
-
-        //Artist object reference, as provided by API so we can access things like the artist's images
-        public static final String COLUMN_ARTIST_OBJECT_REFERENCE = "artist_object_reference";
-
         public static Uri buildArtistUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static Uri buildArtistWithSearchTermUri(String searchTerm) {
+            return CONTENT_URI.buildUpon().appendPath(searchTerm).build();
+        }
+
+        public static Uri buildArtistWithSearchTermAndArtistId(String searchTerm, long id) {
+            return CONTENT_URI.buildUpon().appendPath(searchTerm)
+                    .appendPath(Long.toString(id))
+                    .build();
         }
 
         public static String getSearchTermFromUri(Uri uri) {
@@ -132,6 +138,7 @@ public class DataContract {
         public static long getArtistIdFromUri(Uri uri) {
             return Long.parseLong(uri.getPathSegments().get(2));
         }
+
     }
 
     /* Inner class that defines the table contents of the top tracks table */
@@ -168,9 +175,21 @@ public class DataContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildTrackCountry(String countrySetting) {
+        public static Uri buildTrackWithCountry(String countrySetting) {
             return CONTENT_URI.buildUpon().appendPath(countrySetting).build();
         }
+
+        public static Uri buildTrackWithCountryAndArtistId(String countrySetting, long artistId) {
+            return CONTENT_URI.buildUpon().appendPath(countrySetting)
+                    .appendPath(Long.toString(artistId)).build();
+        }
+
+        public static Uri buildTrackWithCountryArtistAndTrackId(String countrySetting, long artistId, long trackId) {
+            return CONTENT_URI.buildUpon().appendPath(countrySetting)
+                    .appendPath(Long.toString(artistId))
+                    .appendPath(Long.toString(trackId)).build();
+        }
+
 
         public static String getCountrySettingFromUri(Uri uri) {
             return uri.getPathSegments().get(1);

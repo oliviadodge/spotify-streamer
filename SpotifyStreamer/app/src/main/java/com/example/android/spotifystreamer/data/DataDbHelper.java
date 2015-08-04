@@ -41,31 +41,28 @@ public class DataDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_COUNTRY_TABLE = "CREATE TABLE " + DataContract.CountryEntry.TABLE_NAME + " (" +
                 DataContract.CountryEntry._ID + " INTEGER PRIMARY KEY," +
                 DataContract.CountryEntry.COLUMN_COUNTRY_SETTING + " TEXT UNIQUE NOT NULL, " +
-                DataContract.CountryEntry.COLUMN_COUNTRY_NAME + " TEXT NOT NULL, " +
+                DataContract.CountryEntry.COLUMN_COUNTRY_NAME + " TEXT NOT NULL " +
                 " );";
 
 
         // Create a table to hold search terms.
         final String SQL_CREATE_SEARCH_TERM_TABLE = "CREATE TABLE " + DataContract.SearchTermEntry.TABLE_NAME + " (" +
-                DataContract.SearchTermEntry._ID + " INTEGER PRIMARY KEY," +
-                DataContract.SearchTermEntry.COLUMN_SEARCH_TERM + " TEXT UNIQUE NOT NULL " +
+                DataContract.SearchTermEntry._ID + " INTEGER PRIMARY KEY, " +
+                DataContract.SearchTermEntry.COLUMN_SEARCH_TERM + " TEXT UNIQUE NOT NULL" +
                 " );";
 
         final String SQL_CREATE_ARTIST_TABLE = "CREATE TABLE " + DataContract.ArtistEntry.TABLE_NAME + " (" +
-                // Why AutoIncrement here, and not above?
-                // Unique keys will be auto-generated in either case.  But for weather
-                // forecasting, it's reasonable to assume the user will want information
-                // for a certain date and all dates *following*, so the forecast data
-                // should be sorted accordingly.
-                DataContract.ArtistEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                // autoincrement so that the order of the artists returned from the API can be incapsulated by the artist
+                // _id in the db. This is important because users will likely want to see the more relevant artists first
+                DataContract.ArtistEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 
-
-                DataContract.ArtistEntry.COLUMN_ARTIST_NAME + " TEXT NOT NULL, " +
-                DataContract.ArtistEntry.COLUMN_ARTIST_ID + " TEXT UNIQUE NOT NULL;" +
+                DataContract.ArtistEntry.COLUMN_ARTIST_ID + " TEXT UNIQUE NOT NULL, " +
+                DataContract.ArtistEntry.COLUMN_SEARCH_KEY + " INTEGER NOT NULL, " +
+                DataContract.ArtistEntry.COLUMN_ARTIST_NAME + " TEXT NOT NULL," +
 
                 // Set up the search term column as a foreign key to artist table.
                 " FOREIGN KEY (" + DataContract.ArtistEntry.COLUMN_SEARCH_KEY + ") REFERENCES " +
-                DataContract.SearchTermEntry.TABLE_NAME + " (" + DataContract.SearchTermEntry._ID + "), " +
+                DataContract.SearchTermEntry.TABLE_NAME + " (" + DataContract.SearchTermEntry._ID + ") " +
                 " );";
 
         final String SQL_CREATE_TRACK_TABLE = "CREATE TABLE " + DataContract.TopTrackEntry.TABLE_NAME + " (" +
@@ -74,13 +71,13 @@ public class DataDbHelper extends SQLiteOpenHelper {
                     // forecasting, it's reasonable to assume the user will want information
                     // for a certain date and all dates *following*, so the forecast data
                     // should be sorted accordingly.
-                    DataContract.ArtistEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    DataContract.ArtistEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 
-
+                    DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY + " INTEGER NOT NULL, " +
+                    DataContract.TopTrackEntry.COLUMN_ARTIST_KEY + " INTEGER NOT NULL, " +
                     DataContract.TopTrackEntry.COLUMN_TRACK_ID + " TEXT UNIQUE NOT NULL, " +
-                    DataContract.TopTrackEntry.COLUMN_TRACK_NAME + " TEXT NOT NULL," +
-
-                    DataContract.TopTrackEntry.COLUMN_ALBUM_NAME + " TEXT, " +
+                    DataContract.TopTrackEntry.COLUMN_TRACK_NAME + " TEXT NOT NULL, " +
+                    DataContract.TopTrackEntry.COLUMN_ALBUM_NAME + " TEXT," +
 
                     // Set up the artist column as a foreign key to artist table.
                     " FOREIGN KEY (" + DataContract.TopTrackEntry.COLUMN_ARTIST_KEY + ") REFERENCES " +
@@ -88,8 +85,8 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
                     // Set up the country column as a foreign key to country table.
                     " FOREIGN KEY (" + DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY + ") REFERENCES " +
-                    DataContract.CountryEntry.TABLE_NAME + " (" + DataContract.CountryEntry._ID +
-                ");";
+                    DataContract.CountryEntry.TABLE_NAME + " (" + DataContract.CountryEntry._ID + ")" +
+                " );";
 
             sqLiteDatabase.execSQL(SQL_CREATE_COUNTRY_TABLE);
             sqLiteDatabase.execSQL(SQL_CREATE_SEARCH_TERM_TABLE);

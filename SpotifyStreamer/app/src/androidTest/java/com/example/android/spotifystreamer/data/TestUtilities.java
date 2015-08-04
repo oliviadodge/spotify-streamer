@@ -27,7 +27,12 @@ public class TestUtilities extends AndroidTestCase {
     static final String TEST_COUNTRY_NAME = "Austria";
 
     static final String TEST_ARTIST_ID = "0OdUWJ0sBjDrqHygGUXeCF";
+    static final long TEST_ARTIST_ROW_ID = 10L;
     static final String TEST_ARTIST_NAME = "Band of Horses";
+
+    static final String TEST_TRACK_ID = "4o0NjemqhmsYLIMwlcosvW";
+    static final String TEST_TRACK_NAME = "The Funeral";
+    static final String TEST_ALBUM_NAME = "Everything All The Time";
 
     static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
         assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
@@ -58,6 +63,17 @@ public class TestUtilities extends AndroidTestCase {
         artistValues.put(DataContract.ArtistEntry.COLUMN_ARTIST_NAME, TEST_ARTIST_NAME);
 
         return artistValues;
+    }
+
+    static ContentValues createTrackValues(long countryRowId, long artistRowId) {
+        ContentValues trackValues  = new ContentValues();
+        trackValues.put(DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY, countryRowId);
+        trackValues.put(DataContract.TopTrackEntry.COLUMN_ARTIST_KEY, artistRowId);
+        trackValues.put(DataContract.TopTrackEntry.COLUMN_TRACK_ID, TEST_TRACK_ID);
+        trackValues.put(DataContract.TopTrackEntry.COLUMN_TRACK_NAME, TEST_TRACK_NAME);
+        trackValues.put(DataContract.TopTrackEntry.COLUMN_ALBUM_NAME, TEST_ALBUM_NAME);
+
+        return trackValues;
     }
 
 
