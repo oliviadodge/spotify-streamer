@@ -1,46 +1,70 @@
 package com.example.android.spotifystreamer;
 
 import android.app.Fragment;
+import android.app.LoaderManager;
 import android.content.Context;
-import android.content.Intent;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
+import com.example.android.spotifystreamer.data.DataContract;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import kaaes.spotify.webapi.android.SpotifyApi;
-import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
-import kaaes.spotify.webapi.android.models.Tracks;
 
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class TopTracksFragment extends Fragment {
+public class TopTracksFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    public static final int TRACKS_LOADER = 0;
+
+    private static final String[] TRACK_COLUMNS = {
+            DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID,
+            DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID,
+            DataContract.TopTrackEntry.COLUMN_TRACK_NAME,
+            DataContract.TopTrackEntry.COLUMN_ARTIST_KEY,
+            DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY,
+            DataContract.TopTrackEntry.COLUMN_ALBUM_NAME,
+            DataContract.TopTrackEntry.COLUMN_ALBUM_IMAGE_URL,
+            // This works because the DataProvider returns country data joined with
+            // artist and track data, even though they're stored in three different tables.
+            DataContract.CountryEntry.COLUMN_COUNTRY_SETTING
+    };
+
+    // These indices are tied to TRACK_COLUMNS.  If TRACK_COLUMNS changes, these
+    // must change.
+    public static final int COL_TRACK_ID = 0;
+    public static final int COL_TRACK_SPOTIFY_ID = 1;
+    public static final int COL_TRACK_NAME = 2;
+    public static final int COL_ARTIST_ID = 3;
+    public static final int COL_COUNTRY_ID = 4;
+    public static final int COL_ALBUM_NAME = 5;
+    public static final int COL_ALBUM_IMAGE_URL = 6;
+    public static final int COL_COUNTRY_SETTING = 7;
+
+
 
     public static final String TRACK_ID_EXTRA = "track_id";
     public static final String TAG = "TopTracksFragment";
 
 
     TracksAdapter mTracksAdapter;
-    String mArtistId;
+    long mArtistId;
+    String mArtistSpotifyId;
     List<Track> mTopTracks;
     ListView mListView;
 
@@ -52,24 +76,8 @@ public class TopTracksFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setRetainInstance(true);
-
-        mArtistId = getActivity().getIntent().getStringExtra(MainActivityFragment.ARTIST_ID_EXTRA);
-
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        TopTracksLab topTracksLab = TopTracksLab.get(getActivity());
-        if (mArtistId.equals(topTracksLab.getArtistId())) {
-            mTopTracks = TopTracksLab.get(getActivity()).getTopTracks();
-        } else if (networkInfo != null && networkInfo.isConnected()) {
-            FetchTopTracksTask fetchTopTracksTask = new FetchTopTracksTask();
-            fetchTopTracksTask.execute(mArtistId);
-        } else {
-            Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
-            toast.show();
-        }
+        mArtistId = getActivity().getIntent().getLongExtra(MainActivityFragment.EXTRA_ARTIST_ID, -1);
+        mArtistSpotifyId = getActivity().getIntent().getStringExtra(MainActivityFragment.EXTRA_ARTIST_SPOTIFY_ID);
 
     }
 
@@ -78,113 +86,87 @@ public class TopTracksFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
+        mTracksAdapter = new TracksAdapter(getActivity(), null, 0);
+
         mListView = (ListView) rootView.findViewById(R.id.listview_top_tracks);
+        mListView.setAdapter(mTracksAdapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Track track = mTracksAdapter.getItem(position);
-                Log.i(TAG, "got a Track: " + track.name + " " + track.id);
-                if (track.preview_url != null) {
-                    Intent i = new Intent(getActivity(), TrackPlayerActivity.class);
-                    i.putExtra(TRACK_ID_EXTRA, track.id);
-                    startActivity(i);
-                } else {
-                    Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_track_not_playable), Toast.LENGTH_LONG);
-                    toast.show();
-                }
+//                Track track = mTracksAdapter.getItem(position);
+//                Log.i(TAG, "got a Track: " + track.name + " " + track.id);
+//                if (track.preview_url != null) {
+//                    Intent i = new Intent(getActivity(), TrackPlayerActivity.class);
+//                    i.putExtra(TRACK_ID_EXTRA, track.id);
+//                    startActivity(i);
+//                } else {
+//                    Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_track_not_playable), Toast.LENGTH_LONG);
+//                    toast.show();
+//                }
             }
         });
-        setUpAdapter();
 
         return rootView;
     }
 
-    void setUpAdapter() {
-        if (getActivity() == null || mListView == null) return;
-        if (mTopTracks != null) {
-            mTracksAdapter = new TracksAdapter(mTopTracks);
-            mListView.setAdapter(mTracksAdapter);
-        } else
-            mListView.setAdapter(null);
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+
+        getLoaderManager().initLoader(TRACKS_LOADER, null, this);
+
+        super.onActivityCreated(savedInstanceState);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        Log.i(TAG, "onCreateLoader called for TACKS_LOADER");
 
-    private class TracksAdapter extends ArrayAdapter<Track> {
+        String countrySetting = Utility.getPreferredCountry(getActivity());
 
-        public TracksAdapter(List<Track> tracks){
-            super(getActivity(), 0, tracks);
-        }
+        String sortOrder = DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID + " ASC";
+        Uri tracksForArtistIdAndCountry = DataContract.TopTrackEntry
+                .buildTrackWithCountryAndArtistId(countrySetting, mArtistId);
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent){
-            //if we aren't given a view, inflate one
-            if(convertView == null){
-                convertView = getActivity().getLayoutInflater().inflate(R.layout.list_item_track, null);
-            }
-
-            //configure the view for this track
-            Track track = getItem(position);
-
-            ImageView imageView = (ImageView) convertView.findViewById(R.id.list_item_image);
-            List<kaaes.spotify.webapi.android.models.Image> albumImages = track.album.images;
-
-
-            if (albumImages.size() > 0) {
-                String url = albumImages.get((albumImages.size() - 1)).url;
-                Picasso.with(getActivity()).load(url).placeholder(R.drawable.default_placeholder).error(R.drawable.default_placeholder)
-                        .resize(200, 200).centerCrop().into(imageView);
-            } else {
-                Picasso.with(getActivity()).load(R.drawable.default_placeholder)
-                        .resize(200, 200).centerCrop().into(imageView);
-            }
-
-            TextView nameTextView =
-                    (TextView) convertView.findViewById(R.id.list_item_track_textview);
-            nameTextView.setText(track.name);
-
-            TextView albumNameTextView =
-                    (TextView) convertView.findViewById(R.id.list_item_album_textview);
-            albumNameTextView.setText(track.album.name);
-
-            return convertView;
-        }
-
+        return new CursorLoader(getActivity(),
+                tracksForArtistIdAndCountry,
+                TRACK_COLUMNS,
+                null,
+                null,
+                sortOrder);
     }
 
-    public class FetchTopTracksTask extends AsyncTask<String, Void, List<Track>> {
-
-
-        @Override
-        protected List<Track> doInBackground(String... params) {
-
-            List<Track> tracks;
-
-            Map<String, Object> queryParams = new HashMap<>();
-            queryParams.put("country", "US");
-
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService spotify = api.getService();
-
-            Tracks results = spotify.getArtistTopTrack(params[0], queryParams);
-
-            tracks = results.tracks;
-
-            return tracks;
-        }
-
-        @Override
-        protected void onPostExecute(List<Track> tracks) {
-            mTopTracks = tracks;
-            if (mTopTracks.size() == 0) {
-                Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_track_found), Toast.LENGTH_LONG);
-                toast.show();
-            }
-
-            TopTracksLab topTracksLab = TopTracksLab.get(getActivity());
-            topTracksLab.setArtistId(mArtistId);
-            topTracksLab.setTopTracks(mTopTracks);
-            setUpAdapter();
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (cursor.moveToFirst()) {
+            Log.i(TAG, "onLoadFinished called and cursor.moveToFirst() is true. mTracksAdapter swaps with cursor");
+            mTracksAdapter.swapCursor(cursor);
+        } else {    //if the cursor is null, this means that the artists for mSearchTerm have not been added to the db.
+            Log.i(TAG, "onLoadFinished called, and cursor is empty. getTracks() called to start new FetchTracksTask");
+            getTracks();
         }
     }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mTracksAdapter.swapCursor(null);
+    }
+
+    private void getTracks() {
+
+        String countrySetting = Utility.getPreferredCountry(getActivity());
+
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            FetchTracksTask fetchTracksTask = new FetchTracksTask(getActivity());
+            fetchTracksTask.execute(countrySetting, mArtistSpotifyId, Long.toString(mArtistId));
+        } else {
+            Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
+            toast.show();
+        }
+    }
+
 }
 

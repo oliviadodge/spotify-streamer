@@ -22,9 +22,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 public class DataProvider extends ContentProvider {
 
+
+    private static final String TAG = DataProvider.class.getSimpleName();
     // The URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private DataDbHelper mOpenHelper;
@@ -81,7 +84,7 @@ public class DataProvider extends ContentProvider {
     private static final String sSearchTermWithArtistIdSelection =
             DataContract.SearchTermEntry.TABLE_NAME +
                     "." + DataContract.SearchTermEntry.COLUMN_SEARCH_TERM + " = ? AND " +
-                    DataContract.ArtistEntry.COLUMN_ARTIST_ID + " = ? ";
+                    DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID + " = ? ";
 
     //country.country_setting = ?
     private static final String sCountrySettingSelection =
@@ -99,7 +102,7 @@ public class DataProvider extends ContentProvider {
             DataContract.CountryEntry.TABLE_NAME +
                     "." + DataContract.CountryEntry.COLUMN_COUNTRY_SETTING + " = ? AND " +
                     DataContract.TopTrackEntry.COLUMN_ARTIST_KEY + " = ? " + " = ? AND " +
-                    DataContract.TopTrackEntry.COLUMN_TRACK_ID + " = ? ";
+                    DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID + " = ? ";
 
 
     private Cursor getArtistsBySearchTerm(Uri uri, String[] projection, String sortOrder) {
@@ -368,7 +371,6 @@ public class DataProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
-        db.close();
         return returnUri;
     }
 
@@ -478,6 +480,7 @@ public class DataProvider extends ContentProvider {
                 return returnCount;
             }
             default:
+                Log.i(TAG, "Default bulkInsert(uri, values) method called for some reason");
                 return super.bulkInsert(uri, values);
         }
     }

@@ -57,7 +57,7 @@ public class TestUtilities extends AndroidTestCase {
     static ContentValues createArtistValues(long searchTermId) {
         ContentValues artistValues  = new ContentValues();
         artistValues.put(DataContract.ArtistEntry.COLUMN_SEARCH_KEY, searchTermId);
-        artistValues.put(DataContract.ArtistEntry.COLUMN_ARTIST_ID, TEST_ARTIST_ID);
+        artistValues.put(DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID, TEST_ARTIST_ID);
         artistValues.put(DataContract.ArtistEntry.COLUMN_ARTIST_NAME, TEST_ARTIST_NAME);
 
         return artistValues;
@@ -67,7 +67,7 @@ public class TestUtilities extends AndroidTestCase {
         ContentValues trackValues  = new ContentValues();
         trackValues.put(DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY, countryRowId);
         trackValues.put(DataContract.TopTrackEntry.COLUMN_ARTIST_KEY, artistRowId);
-        trackValues.put(DataContract.TopTrackEntry.COLUMN_TRACK_ID, TEST_TRACK_ID);
+        trackValues.put(DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID, TEST_TRACK_ID);
         trackValues.put(DataContract.TopTrackEntry.COLUMN_TRACK_NAME, TEST_TRACK_NAME);
         trackValues.put(DataContract.TopTrackEntry.COLUMN_ALBUM_NAME, TEST_ALBUM_NAME);
 

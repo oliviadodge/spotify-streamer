@@ -436,7 +436,7 @@ public class TestProvider extends AndroidTestCase {
             artistId.setCharAt(i, 'z');
             ContentValues artistValues = new ContentValues();
             artistValues.put(ArtistEntry.COLUMN_SEARCH_KEY, searchTermRowId);
-            artistValues.put(ArtistEntry.COLUMN_ARTIST_ID, artistId.toString());
+            artistValues.put(ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID, artistId.toString());
             artistValues.put(ArtistEntry.COLUMN_ARTIST_NAME, TestUtilities.TEST_ARTIST_NAME);
 
             returnContentValues[i] = artistValues;

@@ -28,7 +28,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
     private static final int DATABASE_VERSION = 1;
 
-    static final String DATABASE_NAME = "data.db";
+    public static final String DATABASE_NAME = "data.db"; //made public for testing purposes only. // TODO delete 'public' qualifier
 
     public DataDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -41,13 +41,13 @@ public class DataDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_COUNTRY_TABLE = "CREATE TABLE " + DataContract.CountryEntry.TABLE_NAME + " (" +
                 DataContract.CountryEntry._ID + " INTEGER PRIMARY KEY," +
                 DataContract.CountryEntry.COLUMN_COUNTRY_SETTING + " TEXT UNIQUE NOT NULL, " +
-                DataContract.CountryEntry.COLUMN_COUNTRY_NAME + " TEXT NOT NULL " +
+                DataContract.CountryEntry.COLUMN_COUNTRY_NAME + " TEXT " +
                 " );";
 
 
         // Create a table to hold search terms.
         final String SQL_CREATE_SEARCH_TERM_TABLE = "CREATE TABLE " + DataContract.SearchTermEntry.TABLE_NAME + " (" +
-                DataContract.SearchTermEntry._ID + " INTEGER PRIMARY KEY, " +
+                DataContract.SearchTermEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 DataContract.SearchTermEntry.COLUMN_SEARCH_TERM + " TEXT UNIQUE NOT NULL" +
                 " );";
 
@@ -56,7 +56,8 @@ public class DataDbHelper extends SQLiteOpenHelper {
                 // _id in the db. This is important because users will likely want to see the more relevant artists first
                 DataContract.ArtistEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 
-                DataContract.ArtistEntry.COLUMN_ARTIST_ID + " TEXT UNIQUE NOT NULL, " +
+                DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID + " TEXT UNIQUE NOT NULL, " +
+                DataContract.ArtistEntry.COLUMN_ARTIST_IMAGE_URL + " TEXT, " +
                 DataContract.ArtistEntry.COLUMN_SEARCH_KEY + " INTEGER NOT NULL, " +
                 DataContract.ArtistEntry.COLUMN_ARTIST_NAME + " TEXT NOT NULL," +
 
@@ -75,11 +76,13 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
                     DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY + " INTEGER NOT NULL, " +
                     DataContract.TopTrackEntry.COLUMN_ARTIST_KEY + " INTEGER NOT NULL, " +
-                    DataContract.TopTrackEntry.COLUMN_TRACK_ID + " TEXT UNIQUE NOT NULL, " +
+                    DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID + " TEXT UNIQUE NOT NULL, " +
                     DataContract.TopTrackEntry.COLUMN_TRACK_NAME + " TEXT NOT NULL, " +
-                    DataContract.TopTrackEntry.COLUMN_ALBUM_NAME + " TEXT," +
+                    DataContract.TopTrackEntry.COLUMN_ALBUM_NAME + " TEXT, " +
+                    DataContract.TopTrackEntry.COLUMN_ALBUM_IMAGE_URL + " TEXT," +
 
-                    // Set up the artist column as a foreign key to artist table.
+
+                // Set up the artist column as a foreign key to artist table.
                     " FOREIGN KEY (" + DataContract.TopTrackEntry.COLUMN_ARTIST_KEY + ") REFERENCES " +
                     DataContract.ArtistEntry.TABLE_NAME + " (" + DataContract.ArtistEntry._ID + "), " +
 

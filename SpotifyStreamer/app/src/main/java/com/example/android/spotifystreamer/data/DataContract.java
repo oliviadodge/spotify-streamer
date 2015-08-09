@@ -109,13 +109,16 @@ public class DataContract {
         public static final String TABLE_NAME = "artist";
 
         // Artist id as returned by API, to query the API for top tracks
-        public static final String COLUMN_ARTIST_ID = "artist_id";
+        public static final String COLUMN_ARTIST_SPOTIFY_ID = "artist_spotify_id";
 
         // Artist name, as provided by API.
         public static final String COLUMN_ARTIST_NAME = "artist_name";
 
         // Search term as a foreign key.
         public static final String COLUMN_SEARCH_KEY = "search_term_id";
+
+        // Url to artist image.
+        public static final String COLUMN_ARTIST_IMAGE_URL = "artist_image_url";
 
         public static Uri buildArtistUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
@@ -162,13 +165,17 @@ public class DataContract {
         public static final String COLUMN_ARTIST_KEY = "artist_id";
 
         // Track id as returned by API
-        public static final String COLUMN_TRACK_ID = "track_id";
+        public static final String COLUMN_TRACK_SPOTIFY_ID = "track_spotify_id";
 
         // Track name, as provided by API.
         public static final String COLUMN_TRACK_NAME = "track_name";
 
         // Track album name, as provided by API.
         public static final String COLUMN_ALBUM_NAME = "album_name";
+
+
+        // Url to album image.
+        public static final String COLUMN_ALBUM_IMAGE_URL = "album_image_url";
 
 
         public static Uri buildTrackUri(long id) {

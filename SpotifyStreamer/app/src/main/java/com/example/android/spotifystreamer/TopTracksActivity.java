@@ -14,8 +14,8 @@ public class TopTracksActivity extends ActionBarActivity {
 
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
-            String artistId = getIntent().getStringExtra(MainActivityFragment.ARTIST_ID_EXTRA);
-            ab.setSubtitle(ArtistLab.get(this).getArtist(artistId).name);
+            String artistId = getIntent().getStringExtra(MainActivityFragment.EXTRA_ARTIST_ID);
+//            ab.setSubtitle(SearchTermLab.get(this).getArtist(artistId).name); // TODO rework this line to get the correct subtitle
         }
     }
 }
