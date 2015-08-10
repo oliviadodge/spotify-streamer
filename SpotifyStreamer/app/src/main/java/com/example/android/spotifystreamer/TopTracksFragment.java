@@ -93,6 +93,18 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+//                if (cursor != null) {
+//                    String countrySetting = Utility.getPreferredCountry(mContext);
+//                    long artistid = cursor.getLong(COL_ARTIST_ID);
+//                    String artistSpotifyId = cursor.getString(COL_ARTIST_SPOTIFY_ID);
+//                    Intent intent = new Intent(getActivity(), TopTracksActivity.class)
+//                            .setData(DataContract.TopTrackEntry
+//                                    .buildTrackWithCountryAndArtistId(countrySetting, cursor.getLong(COL_ARTIST_ID)));
+//                    intent.putExtra(EXTRA_ARTIST_ID, artistid);
+//                    intent.putExtra(EXTRA_ARTIST_SPOTIFY_ID, artistSpotifyId);
+//                    startActivity(intent);
+//                }
 //                Track track = mTracksAdapter.getItem(position);
 //                Log.i(TAG, "got a Track: " + track.name + " " + track.id);
 //                if (track.preview_url != null) {
