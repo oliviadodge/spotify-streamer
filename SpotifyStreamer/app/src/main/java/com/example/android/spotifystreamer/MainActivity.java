@@ -27,15 +27,12 @@ public class MainActivity extends TrackPlayerActivity implements ArtistsFragment
             //of the top tracks cursor
             loadCursorFragment();
 
-            android.util.Log.i(TAG, "onCreate called and mTwoPane is " + mTwoPane);
-
             handleSavedInstanceState(savedInstanceState);
 
         } else{
             //fragment_top_tracks could not be found so this must be a smaller device.
             //Set mTwoPane to false
             mTwoPane = false;
-             android.util.Log.i(TAG, "onCreate called and mTwoPane is " + mTwoPane);
         }
     }
 

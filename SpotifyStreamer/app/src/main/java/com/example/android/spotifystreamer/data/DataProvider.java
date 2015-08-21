@@ -86,11 +86,6 @@ public class DataProvider extends ContentProvider {
                     "." + DataContract.SearchTermEntry.COLUMN_SEARCH_TERM + " = ? AND " +
                     DataContract.ArtistEntry.TABLE_NAME + "." + DataContract.ArtistEntry._ID + " = ? ";
 
-    //country.country_setting = ?
-    private static final String sCountrySettingSelection =
-            DataContract.CountryEntry.TABLE_NAME +
-                    "." + DataContract.CountryEntry.COLUMN_COUNTRY_SETTING + " = ? ";
-
     //country.country_setting = ? AND artist_id = ?
     private static final String sCountrySettingWithArtistIdSelection =
             DataContract.CountryEntry.TABLE_NAME +
@@ -180,7 +175,6 @@ public class DataProvider extends ContentProvider {
                 sortOrder
         );
 
-//        return testCursor; //TODO this is for testing only. Uncomment the code above to return the data we need.
     }
 
     /*

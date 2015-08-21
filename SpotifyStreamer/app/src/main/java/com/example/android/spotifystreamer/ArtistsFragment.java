@@ -38,8 +38,6 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
 
             DataContract.ArtistEntry.TABLE_NAME + "." + DataContract.ArtistEntry._ID,
             DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID,
-            DataContract.ArtistEntry.COLUMN_SEARCH_KEY,
-            DataContract.SearchTermEntry.COLUMN_SEARCH_TERM,
             DataContract.ArtistEntry.COLUMN_ARTIST_NAME,
             DataContract.ArtistEntry.COLUMN_ARTIST_IMAGE_URL,
     };
@@ -48,10 +46,8 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
     // must change.
     static final int COL_ARTIST_ID = 0;
     static final int COL_ARTIST_SPOTIFY_ID = 1;
-    static final int COL_SEARCH_ID = 2;
-    static final int COL_SEARCH_TERM = 3;
-    static final int COL_ARTIST_NAME = 4;
-    static final int COL_ARTIST_IMAGE_URL = 5;
+    static final int COL_ARTIST_NAME = 2;
+    static final int COL_ARTIST_IMAGE_URL = 3;
 
 
     ArtistsAdapter mArtistsAdapter;
@@ -61,7 +57,6 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
     Context mContext;
     LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks;
 
-    public static final String EXTRA_ARTIST_ID = "artist_id";
     public static final String EXTRA_ARTIST_SPOTIFY_ID = "artist_spotify_id";
     public static final String EXTRA_ARTIST_NAME = "artist_name";
 
@@ -98,7 +93,7 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
 
         mArtistsAdapter = new ArtistsAdapter(getActivity(), null, 0);
 
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_artists, container, false);
 
         mListView = (ListView) rootView.findViewById(R.id.listview_artists);
         mListView.setAdapter(mArtistsAdapter);

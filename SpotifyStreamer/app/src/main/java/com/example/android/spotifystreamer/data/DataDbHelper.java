@@ -68,9 +68,9 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_TRACK_TABLE = "CREATE TABLE " + DataContract.TopTrackEntry.TABLE_NAME + " (" +
                     // Why AutoIncrement here, and not above?
-                    // Unique keys will be auto-generated in either case.  But for weather
-                    // forecasting, it's reasonable to assume the user will want information
-                    // for a certain date and all dates *following*, so the forecast data
+                    // Unique keys will be auto-generated in either case.  But for our
+                    // purposes, it's reasonable to assume the user will want information
+                    // in the same order it comes from the api, so the data
                     // should be sorted accordingly.
                     DataContract.ArtistEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 

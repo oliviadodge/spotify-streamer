@@ -54,8 +54,6 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
     public static final int COL_ALBUM_NAME = 2;
     public static final int COL_ALBUM_IMAGE_URL = 3;
     public static final int COL_TRACK_PREVIEW_URL = 4;
-    public static final int COL_TRACK_ID = 5;
-    public static final int COL_ARTIST_ID = 6;
 
 
     /**
@@ -67,7 +65,7 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(ArrayList<String> trackInfo, Cursor cursor);
+        void onItemSelected(ArrayList<String> trackInfo, Cursor cursor);
     }
 
 
@@ -111,7 +109,7 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 Log.i(TAG, "onItemClick called. Position, ID, and nextFocusDn are  " + position + id + parent.getNextFocusDownId());
                 if (cursor != null) {
-                    ArrayList<String> trackInfo = new ArrayList<String>();
+                    ArrayList<String> trackInfo = new ArrayList<>();
                     trackInfo.add(COL_TRACK_NAME, cursor.getString(COL_TRACK_NAME));
                     trackInfo.add(COL_ARTIST_NAME, cursor.getString(COL_ARTIST_NAME));
                     trackInfo.add(COL_ALBUM_NAME, cursor.getString(COL_ALBUM_NAME));
@@ -150,7 +148,6 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
 
             String sortOrder = DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID + " ASC";
 
-                    //TODO check if mUri is null. If not, return the CursorLoader
             return new CursorLoader(getActivity(),
                     mUri,
                     TRACK_COLUMNS,

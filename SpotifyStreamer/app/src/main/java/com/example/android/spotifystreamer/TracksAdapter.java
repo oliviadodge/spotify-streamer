@@ -39,7 +39,7 @@ public class TracksAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        int layoutId = -1;
+        int layoutId;
 
         layoutId = R.layout.list_item_track;
 

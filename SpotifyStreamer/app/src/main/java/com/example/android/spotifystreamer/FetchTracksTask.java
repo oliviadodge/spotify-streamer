@@ -65,7 +65,7 @@ public class FetchTracksTask extends AsyncTask<String, Void, Void> {
         long countryId = addCountry(countrySetting);
 
         // Insert the new tracks information into the database
-        Vector<ContentValues> cVVector = new Vector<ContentValues>(tracks.size());
+        Vector<ContentValues> cVVector = new Vector<>(tracks.size());
 
         for (int i = 0; i < tracks.size(); i++) {
             // These are the values that will be collected.

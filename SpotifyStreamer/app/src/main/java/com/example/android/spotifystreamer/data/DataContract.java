@@ -21,7 +21,7 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
- * Defines table and column names for the weather database.
+ * Defines table and column names for the spotify database.
  */
 public class DataContract {
 
@@ -36,8 +36,8 @@ public class DataContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     // Possible paths (appended to base content URI for possible URI's)
-    // For instance, content://com.example.android.sunshine.app/weather/ is a valid path for
-    // looking at weather data. content://com.example.android.sunshine.app/givemeroot/ will fail,
+    // For instance, content://com.example.android.spotifystreamer/artist/ is a valid path for
+    // looking at artist data. content://com.example.android.spotifystreamer/givemeroot/ will fail,
     // as the ContentProvider hasn't been given any information on what to do with "givemeroot".
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
     public static final String PATH_ARTIST = "artist";
@@ -60,7 +60,7 @@ public class DataContract {
         public static final String TABLE_NAME = "country";
 
         // The country setting string is what will be sent to the spotify api
-        // as the location query.
+        // as the country query.
         public static final String COLUMN_COUNTRY_SETTING = "country_setting";
 
         // Human readable country string, provided by the API.  Because for styling,
@@ -190,13 +190,6 @@ public class DataContract {
             return CONTENT_URI.buildUpon().appendPath(countrySetting)
                     .appendPath(Long.toString(artistId)).build();
         }
-
-        public static Uri buildTrackWithCountryArtistAndTrackId(String countrySetting, long artistId, long trackId) {
-            return CONTENT_URI.buildUpon().appendPath(countrySetting)
-                    .appendPath(Long.toString(artistId))
-                    .appendPath(Long.toString(trackId)).build();
-        }
-
 
         public static String getCountrySettingFromUri(Uri uri) {
             return uri.getPathSegments().get(1);

@@ -29,15 +29,15 @@ public class TrackPlayerDialogFragment extends DialogFragment {
  * implement this interface in order to receive event callbacks.
  * Each method passes the DialogFragment in case the host needs to query it. */
     public interface TrackPlayerDialogListener {
-        public void onPreviousClick(DialogFragment dialog);
+        void onPreviousClick(DialogFragment dialog);
 
-        public void onPlayPauseClick(DialogFragment dialog);
+        void onPlayPauseClick(DialogFragment dialog);
 
-        public void onNextClick(DialogFragment dialog);
+        void onNextClick(DialogFragment dialog);
 
-        public void onDialogViewCreated(View view);
+        void onDialogViewCreated(View view);
 
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser);
+        void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser);
     }
 
     // Use this instance of the interface to deliver action events
