@@ -84,11 +84,11 @@ public class DataProvider extends ContentProvider {
     private static final String sSearchTermWithArtistIdSelection =
             DataContract.SearchTermEntry.TABLE_NAME +
                     "." + DataContract.SearchTermEntry.COLUMN_SEARCH_TERM + " = ? AND " +
-                    DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID + " = ? ";
+                    DataContract.ArtistEntry.TABLE_NAME + "." + DataContract.ArtistEntry._ID + " = ? ";
 
     //country.country_setting = ?
     private static final String sCountrySettingSelection =
-            DataContract.CountryEntry.TABLE_NAME+
+            DataContract.CountryEntry.TABLE_NAME +
                     "." + DataContract.CountryEntry.COLUMN_COUNTRY_SETTING + " = ? ";
 
     //country.country_setting = ? AND artist_id = ?
@@ -101,8 +101,8 @@ public class DataProvider extends ContentProvider {
     private static final String sCountrySettingWithArtistIdAndTrackIdSelection =
             DataContract.CountryEntry.TABLE_NAME +
                     "." + DataContract.CountryEntry.COLUMN_COUNTRY_SETTING + " = ? AND " +
-                    DataContract.TopTrackEntry.COLUMN_ARTIST_KEY + " = ? " + " = ? AND " +
-                    DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID + " = ? ";
+//                    DataContract.ArtistEntry.TABLE_NAME + "." + DataContract.ArtistEntry._ID + " = ? " + " = ? AND " +
+                    DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID + " = ? ";
 
 
     private Cursor getArtistsBySearchTerm(Uri uri, String[] projection, String sortOrder) {
@@ -155,17 +155,32 @@ public class DataProvider extends ContentProvider {
 
     private Cursor getTrackByCountryArtistAndTrackId(Uri uri, String[] projection, String sortOrder) {
         String countrySetting = DataContract.TopTrackEntry.getCountrySettingFromUri(uri);
+        Log.i(TAG, "getTrackByCountryArtistAndTrackId called and countrySetting is " + countrySetting);
         long artistId = DataContract.TopTrackEntry.getArtistIdFromUri(uri);
+        Log.i(TAG, "getTrackByCountryArtistAndTrackId called and artistId is " + artistId);
         long trackId = DataContract.TopTrackEntry.getTrackIdFromUri(uri);
+        Log.i(TAG, "getTrackByCountryArtistAndTrackId called and trackId is " + trackId);
+
+        Cursor testCursor = sTracksByCountrySettingAndArtistIdQueryBuilder.query(mOpenHelper.getReadableDatabase(), projection, null, null, null, null, null);
+
+        StringBuilder columnNames = new StringBuilder();
+        String[] columns = testCursor.getColumnNames();
+        for (int i = 0; i < columns.length; i++) {
+            columnNames.append(columns[i]);
+        }
+
+        Log.i(TAG, "testCursor returned the following columns " + columnNames.toString() + ". and the column count is " + testCursor.getColumnCount());
 
         return sTracksByCountrySettingAndArtistIdQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
                 sCountrySettingWithArtistIdAndTrackIdSelection,
-                new String[]{countrySetting, Long.toString(artistId), Long.toString(trackId)},
+                new String[]{countrySetting, Long.toString(trackId)},
                 null,
                 null,
                 sortOrder
         );
+
+//        return testCursor; //TODO this is for testing only. Uncomment the code above to return the data we need.
     }
 
     /*
@@ -243,10 +258,11 @@ public class DataProvider extends ContentProvider {
                         String sortOrder) {
         // Here's the switch statement that, given a URI, will determine what kind of request it is,
         // and query the database accordingly.
+        Log.i(TAG, "DataProvider.query() called and sUriMatcher returned " + sUriMatcher.match(uri));
 
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
-            // "track/*/*"
+            // "track/*/#/#"
             case TOP_TRACK_WITH_COUNTRY_ARTIST_AND_TRACK_ID:
             {
                 retCursor = getTrackByCountryArtistAndTrackId(uri, projection, sortOrder);

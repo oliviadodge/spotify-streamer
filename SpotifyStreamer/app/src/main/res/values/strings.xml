@@ -8,6 +8,8 @@
     <string name="toast_no_track_found">No top tracks found for that artist.</string>
     <string name="toast_track_not_playable">There is no preview for this track</string>
     <string name="toast_no_network_found">Can\'t find a network connection.</string>
+    <string name="toast_no_more_tracks">There are no more top tracks from this artist.</string>
+
 
     <!-- Label for the country preference [CHAR LIMIT=30] -->
     <string name="pref_country_label">Country</string>

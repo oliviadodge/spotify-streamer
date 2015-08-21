@@ -56,7 +56,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
                 // _id in the db. This is important because users will likely want to see the more relevant artists first
                 DataContract.ArtistEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 
-                DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID + " TEXT UNIQUE NOT NULL, " +
+                DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID + " TEXT NOT NULL, " +
                 DataContract.ArtistEntry.COLUMN_ARTIST_IMAGE_URL + " TEXT, " +
                 DataContract.ArtistEntry.COLUMN_SEARCH_KEY + " INTEGER NOT NULL, " +
                 DataContract.ArtistEntry.COLUMN_ARTIST_NAME + " TEXT NOT NULL," +
@@ -76,10 +76,11 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
                     DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY + " INTEGER NOT NULL, " +
                     DataContract.TopTrackEntry.COLUMN_ARTIST_KEY + " INTEGER NOT NULL, " +
-                    DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID + " TEXT UNIQUE NOT NULL, " +
+                    DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID + " TEXT NOT NULL, " +
                     DataContract.TopTrackEntry.COLUMN_TRACK_NAME + " TEXT NOT NULL, " +
                     DataContract.TopTrackEntry.COLUMN_ALBUM_NAME + " TEXT, " +
-                    DataContract.TopTrackEntry.COLUMN_ALBUM_IMAGE_URL + " TEXT," +
+                    DataContract.TopTrackEntry.COLUMN_ALBUM_IMAGE_URL + " TEXT, " +
+                    DataContract.TopTrackEntry.COLUMN_TRACK_PREVIEW_URL + " TEXT," +
 
 
                 // Set up the artist column as a foreign key to artist table.

@@ -55,7 +55,7 @@ public class ArtistsAdapter extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        String artistImageUrl = cursor.getString(MainActivityFragment.COL_ARTIST_IMAGE_URL);
+        String artistImageUrl = cursor.getString(ArtistsFragment.COL_ARTIST_IMAGE_URL);
 
         //check connectivity to see if artist images can be loaded or if a placeholder must be loaded
         ConnectivityManager connMgr = (ConnectivityManager)
@@ -70,7 +70,7 @@ public class ArtistsAdapter extends CursorAdapter {
                     .resize(200, 200).centerCrop().into(viewHolder.artistImageView);
         }
 
-        String artistName = cursor.getString(MainActivityFragment.COL_ARTIST_NAME);
+        String artistName = cursor.getString(ArtistsFragment.COL_ARTIST_NAME);
 
         viewHolder.artistNameTextView.setText(artistName);
     }

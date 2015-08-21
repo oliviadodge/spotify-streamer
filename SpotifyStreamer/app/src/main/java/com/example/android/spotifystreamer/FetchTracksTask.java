@@ -56,31 +56,9 @@ public class FetchTracksTask extends AsyncTask<String, Void, Void> {
 
             countryId = ContentUris.parseId(insertedUri);
         }
-
-//        searchTermCursor.close();
         return countryId;
     }
 
-//    String getArtistSpotifyId(String artistId) {
-//        String artistSpotifyId;
-//
-//        //code in this section is commented out for testing and because it may not be necessary.
-//        // TODO re-evaluate commented code in this method to see if it is necessary.
-//
-//        Cursor artistCursor = mContext.getContentResolver().query(
-//                DataContract.ArtistEntry.CONTENT_URI,
-//                new String[]{DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID},
-//                DataContract.ArtistEntry._ID + " = ?",
-//                new String[]{artistId}, null);
-//
-//        artistCursor.moveToFirst();
-//        int artistIdIndex = artistCursor.getColumnIndex(DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID);
-//        artistSpotifyId = artistCursor.getString(artistIdIndex);
-//
-//
-////        searchTermCursor.close();
-//        return artistSpotifyId;
-//    }
 
     private void addTracks(List<Track> tracks, String countrySetting, String artistId) {
 
@@ -95,18 +73,21 @@ public class FetchTracksTask extends AsyncTask<String, Void, Void> {
             String trackName;
             String albumName;
             String albumImageUrl;
+            String trackPreviewUrl;
 
             trackSpotifyId = tracks.get(i).id;
             trackName = tracks.get(i).name;
             albumName = tracks.get(i).album.name;
 
-            int numOfImages = 0;
+            int numOfImages;
             numOfImages = tracks.get(i).album.images.size();
             if (numOfImages > 0) {
                 albumImageUrl = tracks.get(i).album.images.get((numOfImages - 1) / 2).url;
             } else {
                 albumImageUrl = "";
             }
+
+            trackPreviewUrl = tracks.get(i).preview_url;
 
             ContentValues trackValues = new ContentValues();
 
@@ -116,6 +97,7 @@ public class FetchTracksTask extends AsyncTask<String, Void, Void> {
             trackValues.put(DataContract.TopTrackEntry.COLUMN_TRACK_NAME, trackName);
             trackValues.put(DataContract.TopTrackEntry.COLUMN_ALBUM_NAME, albumName);
             trackValues.put(DataContract.TopTrackEntry.COLUMN_ALBUM_IMAGE_URL, albumImageUrl);
+            trackValues.put(DataContract.TopTrackEntry.COLUMN_TRACK_PREVIEW_URL, trackPreviewUrl);
 
             cVVector.add(trackValues);
         }

@@ -36,17 +36,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.android.spotifystreamer.SettingsActivity" />
         </activity>
-        <activity
-            android:name=".TrackPlayerActivity"
-            android:label="@string/title_activity_track_player"
-            android:parentActivityName=".TopTracksActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.android.spotifystreamer.TopTracksActivity" />
-        </activity>
+
         <provider
             android:authorities="@string/content_authority"
             android:name=".data.DataProvider"
+            android:exported="false"
             />
 
     </application>

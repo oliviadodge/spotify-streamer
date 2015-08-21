@@ -33,21 +33,8 @@ public class FetchArtistsTask extends AsyncTask<String, Void, Void> {
 
     long addSearchTerm(String searchTerm) {
         long searchTermId;
-
-        //code in this section is commented out for testing and because it may not be necessary.
-        // TODO re-evaluate commented code in this method to see if it is necessary.
-
-//        Cursor searchTermCursor = mContext.getContentResolver().query(
-//                DataContract.SearchTermEntry.CONTENT_URI,
-//                new String[]{DataContract.SearchTermEntry._ID},
-//                DataContract.SearchTermEntry.COLUMN_SEARCH_TERM + " = ?",
-//                new String[]{searchTerm}, null);
-//
-//        if (searchTermCursor.moveToFirst()) {
-//            int searchTermIdIndex = searchTermCursor.getColumnIndex(DataContract.SearchTermEntry._ID);
-//            searchTermId = searchTermCursor.getLong(searchTermIdIndex);
-//        } else {
             ContentValues values = new ContentValues();
+
 
             values.put(DataContract.SearchTermEntry.COLUMN_SEARCH_TERM, searchTerm);
 
@@ -55,9 +42,7 @@ public class FetchArtistsTask extends AsyncTask<String, Void, Void> {
                     values);
 
             searchTermId = ContentUris.parseId(insertedUri);
-//        }
 
-//        searchTermCursor.close();
         return searchTermId;
     }
 
@@ -66,7 +51,7 @@ public class FetchArtistsTask extends AsyncTask<String, Void, Void> {
         long searchTermId = addSearchTerm(searchTerm);
 
         // Insert the new artists information into the database
-        Vector<ContentValues> cVVector = new Vector<ContentValues>(artists.size());
+        Vector<ContentValues> cVVector = new Vector<>(artists.size());
 
         for (int i = 0; i < artists.size(); i++) {
             // These are the values that will be collected.
@@ -106,6 +91,7 @@ public class FetchArtistsTask extends AsyncTask<String, Void, Void> {
         Log.d(LOG_TAG, "FetchArtistsTask Complete. " + inserted + " Inserted");
 
     }
+
 
     @Override
     protected Void doInBackground(String... params) {

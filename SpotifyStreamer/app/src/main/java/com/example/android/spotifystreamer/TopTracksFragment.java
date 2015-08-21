@@ -20,9 +20,7 @@ import android.widget.Toast;
 
 import com.example.android.spotifystreamer.data.DataContract;
 
-import java.util.List;
-
-import kaaes.spotify.webapi.android.models.Track;
+import java.util.ArrayList;
 
 
 /**
@@ -31,15 +29,19 @@ import kaaes.spotify.webapi.android.models.Track;
 public class TopTracksFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int TRACKS_LOADER = 0;
+    public static final String TRACKS_URI = "tracks_uri";
+
 
     private static final String[] TRACK_COLUMNS = {
-            DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID,
-            DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID,
             DataContract.TopTrackEntry.COLUMN_TRACK_NAME,
-            DataContract.TopTrackEntry.COLUMN_ARTIST_KEY,
-            DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY,
+            DataContract.ArtistEntry.COLUMN_ARTIST_NAME,
             DataContract.TopTrackEntry.COLUMN_ALBUM_NAME,
             DataContract.TopTrackEntry.COLUMN_ALBUM_IMAGE_URL,
+            DataContract.TopTrackEntry.COLUMN_TRACK_PREVIEW_URL,
+            DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID,
+            DataContract.TopTrackEntry.COLUMN_ARTIST_KEY,
+            DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY,
+
             // This works because the DataProvider returns country data joined with
             // artist and track data, even though they're stored in three different tables.
             DataContract.CountryEntry.COLUMN_COUNTRY_SETTING
@@ -47,43 +49,54 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
 
     // These indices are tied to TRACK_COLUMNS.  If TRACK_COLUMNS changes, these
     // must change.
-    public static final int COL_TRACK_ID = 0;
-    public static final int COL_TRACK_SPOTIFY_ID = 1;
-    public static final int COL_TRACK_NAME = 2;
-    public static final int COL_ARTIST_ID = 3;
-    public static final int COL_COUNTRY_ID = 4;
-    public static final int COL_ALBUM_NAME = 5;
-    public static final int COL_ALBUM_IMAGE_URL = 6;
-    public static final int COL_COUNTRY_SETTING = 7;
+    public static final int COL_TRACK_NAME = 0;
+    public static final int COL_ARTIST_NAME = 1;
+    public static final int COL_ALBUM_NAME = 2;
+    public static final int COL_ALBUM_IMAGE_URL = 3;
+    public static final int COL_TRACK_PREVIEW_URL = 4;
+    public static final int COL_TRACK_ID = 5;
+    public static final int COL_ARTIST_ID = 6;
 
 
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * Callback for when an item has been selected.
+         */
+        public void onItemSelected(ArrayList<String> trackInfo, Cursor cursor);
+    }
 
-    public static final String TRACK_ID_EXTRA = "track_id";
+
     public static final String TAG = "TopTracksFragment";
 
 
     TracksAdapter mTracksAdapter;
-    long mArtistId;
     String mArtistSpotifyId;
-    List<Track> mTopTracks;
+    Uri mUri;
     ListView mListView;
 
 
     public TopTracksFragment() {
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        mArtistId = getActivity().getIntent().getLongExtra(MainActivityFragment.EXTRA_ARTIST_ID, -1);
-        mArtistSpotifyId = getActivity().getIntent().getStringExtra(MainActivityFragment.EXTRA_ARTIST_SPOTIFY_ID);
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mUri = arguments.getParcelable(TopTracksFragment.TRACKS_URI);
+            Log.i(TAG, "arguments are not null and uri is " + mUri);
+            mArtistSpotifyId = arguments.getString(ArtistsFragment.EXTRA_ARTIST_SPOTIFY_ID);
+        } else{
+            Log.i(TAG, "onCreateView called and arguments are null!");
+        }
+
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
         mTracksAdapter = new TracksAdapter(getActivity(), null, 0);
@@ -93,28 +106,20 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-//                if (cursor != null) {
-//                    String countrySetting = Utility.getPreferredCountry(mContext);
-//                    long artistid = cursor.getLong(COL_ARTIST_ID);
-//                    String artistSpotifyId = cursor.getString(COL_ARTIST_SPOTIFY_ID);
-//                    Intent intent = new Intent(getActivity(), TopTracksActivity.class)
-//                            .setData(DataContract.TopTrackEntry
-//                                    .buildTrackWithCountryAndArtistId(countrySetting, cursor.getLong(COL_ARTIST_ID)));
-//                    intent.putExtra(EXTRA_ARTIST_ID, artistid);
-//                    intent.putExtra(EXTRA_ARTIST_SPOTIFY_ID, artistSpotifyId);
-//                    startActivity(intent);
-//                }
-//                Track track = mTracksAdapter.getItem(position);
-//                Log.i(TAG, "got a Track: " + track.name + " " + track.id);
-//                if (track.preview_url != null) {
-//                    Intent i = new Intent(getActivity(), TrackPlayerActivity.class);
-//                    i.putExtra(TRACK_ID_EXTRA, track.id);
-//                    startActivity(i);
-//                } else {
-//                    Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_track_not_playable), Toast.LENGTH_LONG);
-//                    toast.show();
-//                }
+                Log.i(TAG, "onItemClick called. Position, ID, and nextFocusDn are  " + position + id + parent.getNextFocusDownId());
+                if (cursor != null) {
+                    ArrayList<String> trackInfo = new ArrayList<String>();
+                    trackInfo.add(COL_TRACK_NAME, cursor.getString(COL_TRACK_NAME));
+                    trackInfo.add(COL_ARTIST_NAME, cursor.getString(COL_ARTIST_NAME));
+                    trackInfo.add(COL_ALBUM_NAME, cursor.getString(COL_ALBUM_NAME));
+                    trackInfo.add(COL_ALBUM_IMAGE_URL, cursor.getString(COL_ALBUM_IMAGE_URL));
+                    trackInfo.add(COL_TRACK_PREVIEW_URL, cursor.getString(COL_TRACK_PREVIEW_URL));
+
+                    ((Callback) getActivity()).onItemSelected(trackInfo, cursor);
+                }
+
             }
         });
 
@@ -131,20 +136,23 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        Log.i(TAG, "onCreateLoader called for TACKS_LOADER");
+        Log.i(TAG, "onCreateLoader called for TRACKS_LOADER and mUri is " + mUri);
 
-        String countrySetting = Utility.getPreferredCountry(getActivity());
+        if (null != mUri){
 
-        String sortOrder = DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID + " ASC";
-        Uri tracksForArtistIdAndCountry = DataContract.TopTrackEntry
-                .buildTrackWithCountryAndArtistId(countrySetting, mArtistId);
+            String sortOrder = DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID + " ASC";
 
-        return new CursorLoader(getActivity(),
-                tracksForArtistIdAndCountry,
-                TRACK_COLUMNS,
-                null,
-                null,
-                sortOrder);
+                    //TODO check if mUri is null. If not, return the CursorLoader
+            return new CursorLoader(getActivity(),
+                    mUri,
+                    TRACK_COLUMNS,
+                    null,
+                    null,
+                    sortOrder)
+            ;
+        }
+
+        return null;
     }
 
     @Override
@@ -152,7 +160,7 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
         if (cursor.moveToFirst()) {
             Log.i(TAG, "onLoadFinished called and cursor.moveToFirst() is true. mTracksAdapter swaps with cursor");
             mTracksAdapter.swapCursor(cursor);
-        } else {    //if the cursor is null, this means that the artists for mSearchTerm have not been added to the db.
+        } else {    //if the cursor is null, this means that the data has not been added to the db.
             Log.i(TAG, "onLoadFinished called, and cursor is empty. getTracks() called to start new FetchTracksTask");
             getTracks();
         }
@@ -173,12 +181,22 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
 
         if (networkInfo != null && networkInfo.isConnected()) {
             FetchTracksTask fetchTracksTask = new FetchTracksTask(getActivity());
-            fetchTracksTask.execute(countrySetting, mArtistSpotifyId, Long.toString(mArtistId));
+            fetchTracksTask.execute(countrySetting, mArtistSpotifyId, Long.toString(DataContract.TopTrackEntry.getArtistIdFromUri(mUri)));
         } else {
             Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
             toast.show();
         }
     }
 
+    public void onCountryChanged(String newCountry) {
+        Log.i(TAG, "onCountryChanged() called and data is being reloaded");
+                Uri uri = mUri;
+        if (null != uri) {
+            long dateartistId = DataContract.TopTrackEntry.getArtistIdFromUri(uri);
+            Uri updatedUri = DataContract.TopTrackEntry.buildTrackWithCountryAndArtistId(newCountry, dateartistId);
+            mUri = updatedUri;
+            getLoaderManager().restartLoader(TRACKS_LOADER, null, this);
+        }
+    }
 }
 

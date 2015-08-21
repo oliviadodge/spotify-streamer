@@ -178,6 +178,10 @@ public class DataContract {
         public static final String COLUMN_ALBUM_IMAGE_URL = "album_image_url";
 
 
+        // Url to track preview
+        public static final String COLUMN_TRACK_PREVIEW_URL = "track_preview_url";
+
+
         public static Uri buildTrackUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
