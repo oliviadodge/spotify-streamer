@@ -2,6 +2,15 @@ package com.example.android.spotifystreamer;
 
 /**
  * Created by oliviadodge on 8/19/2015.
+ *
+ * This is an abstract activity class that will play top tracks from an artists and display a dialog fragment
+ * for the currently playing track.
+ *
+ * Activities that subclass this activity should override the onCreate(Bundle savedInstanceState)
+ * method, call super.onCreate(savedInstanceState) and call loadCursorFragment()
+ * and handleSavedInstanceState(savedInstanceState)
+ * when overriding the onCreate method depending on whether it will be a two
+ * pane layout or one pane.
  */
 
 import android.app.Dialog;
@@ -37,6 +46,7 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
     private static final String TAG = TrackPlayerActivity.class.getSimpleName();
     public static final String TRACK_PLAYER_DIALOG_FRAGMENT_TAG = "TrackPlayerDialogFragmentTag";
     public static final String CURSOR_FRAGMENT_TAG = "CursorFragmentTag";
+    public static final String TOP_TRACKS_FRAGMENT_TAG = "TopTracksFragmentTag";
 
     //Keys
     public static final String KEY_TRACK_INFO_ARRAY_LIST = "track_info_array_list";
@@ -53,12 +63,15 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
     SeekBar mSeekBar;
     UpdateSeekBarTask mUpdateSeekBarTask;
     CursorFragment mCursorFragment;
+    String mCountrySetting;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mContext = this;
+        mCountrySetting = Utility.getPreferredCountry(this);
         loadContentView();
 
         //Activities that subclass this Activity should
@@ -107,21 +120,15 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
 
             mNowPlayingUrl = savedInstanceState.getString(KEY_NOW_PLAYING_URL);
 
-            //If there was a dialog showing, get the arguments and put them into
-            //a new ArrayList<String> trackInfo
-            ArrayList<String> trackInfo = new ArrayList<>();
+            //If there was a dialog showing, get the arguments.
             Bundle dialogFragmentArgs = new Bundle();
             if (dialogFragment != null) {
                 Log.i(TAG, "onCreate() called and savedInstanceState and dialogFragment are not null ");
                 dialogFragmentArgs = dialogFragment.getArguments();
-//                ArrayList<String> trackAttr = dialogFragmentArgs.getStringArrayList(KEY_TRACK_INFO_ARRAY_LIST);
-//                if (trackAttr != null) {
-//                    trackInfo = trackAttr;
-//                }
             }
 
             //We need to address two scenarios that could have been the case when the device was rotated:
-            //1. The dialog was showing (ie trackInfo is greater than 0) so we need to restart the track player
+            //1. The dialog was showing (ie the dialog args are not null) so we need to restart the track player
             //2. The dialog had been dismissed but a track was playing or had been paused (ie mNowPlayingUrl is not null)
             if ((dialogFragmentArgs != null) || (mNowPlayingUrl != null)) {
                 //Get a reference to the url, position, and state of the track that was playing when the activity was recreated.
@@ -155,19 +162,25 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
         mCursor = cursor;
         //Make sure mCursor is retained across rotation by saving it in a fragment
         mCursorFragment.setCursor(mCursor);
+
+        //Make a new bundle of dialog fragment arguments
         Bundle dialogFragmentArgs = new Bundle();
         dialogFragmentArgs.putStringArrayList(KEY_TRACK_INFO_ARRAY_LIST, trackInfo);
+
+        //If the last selected track is also the current one and it
+        //was paused before it was dismissed, make sure this is info
+        //is loaded into the arguments so the "play" icon can be shown.
         if (isTrackSelectedTrackPlaying(trackInfo) && (!mPlayer.isPlaying())) {
             dialogFragmentArgs.putBoolean(KEY_IS_TRACK_PAUSED, true);
         }
 
-        //Check if there is a track playing and if it is also the track that was selected. If not start the track player.
-        if ((mNowPlayingUrl == null) || (mPlayer == null)) {
-            //There is no track currently playing. Start up the MediaPlayer.
-            mNowPlayingUrl = trackInfo.get(TopTracksFragment.COL_TRACK_PREVIEW_URL);
-            startTrackPlayer(trackInfo.get(TopTracksFragment.COL_TRACK_PREVIEW_URL), 0, false);
-        } else if (!isTrackSelectedTrackPlaying(trackInfo)) {
-            //A different track was selected. Start up the MediaPlayer.
+        //A few different scenarios could be the case. If any of these cases are true,
+        // we need to start the player again:
+        //1. A track had not yet been selected or had completed playback and the dialog was dismissed
+                //(mNowPlayingUrl will be null)
+        //2. The device was rotated (mPlayer is null)
+        //3. The track selected is other than the track that is currently playing.
+        if ((mNowPlayingUrl == null) || (mPlayer == null) || (!isTrackSelectedTrackPlaying(trackInfo))){
             mNowPlayingUrl = trackInfo.get(TopTracksFragment.COL_TRACK_PREVIEW_URL);
             startTrackPlayer(trackInfo.get(TopTracksFragment.COL_TRACK_PREVIEW_URL), 0, false);
         }
@@ -191,16 +204,17 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
         // Create and show the dialog.
         dialogFragment.show(ft, TRACK_PLAYER_DIALOG_FRAGMENT_TAG);
 
-        //Start the task to update the progress bar every second.
-        startUpdatingSeekBar();
+//        //Start the task to update the progress bar every second.
+//        startUpdatingSeekBar();
     }
 
     //Helper method to start updating the seek bar as the song plays
     private void startUpdatingSeekBar() {
-        if (mUpdateSeekBarTask == null) {
-            mUpdateSeekBarTask = new UpdateSeekBarTask();
-            mUpdateSeekBarTask.execute();
-        } else if (mUpdateSeekBarTask.isCancelled()) {
+        //Make sure you are not creating a second AsyncTask.
+        //If there was already one running, cancel it and start a new one so that
+        //it doesn't call mPlayer.getCurrentPosition() when the MediaPlayer is not
+        //in a valid state.
+        if ((mUpdateSeekBarTask == null) || (mUpdateSeekBarTask.isCancelled())) {
             mUpdateSeekBarTask = new UpdateSeekBarTask();
             mUpdateSeekBarTask.execute();
         } else {
@@ -215,7 +229,8 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
         Log.i(TAG, "onDialogViewCreated called");
         mSeekBar = (SeekBar) view.findViewById(R.id.track_player_seek_bar);
 
-        //Restart the UpdateSeekBarTask to update the progress bar every second.
+        //Restart the UpdateSeekBarTask now that we have a seek bar to update the progress bar
+        // unless of course mPlayer is null.
         if (mPlayer != null) {
             startUpdatingSeekBar();
             Log.i(TAG, "UpdateSeekBarTask executed from onDialogViewCreated");
@@ -224,6 +239,9 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
 
     public void startTrackPlayer(String trackPreviewUrl, final int currentPosition, final boolean isPaused) {
 
+        //We must cancel the UpdateSeekBarTask if it is running.
+        //Otherwise we might get an IllegalStateException when we are
+        //preparing the MediaPlayer and the Task calls getCurrentPosition().
         if ((mUpdateSeekBarTask != null) && (!mUpdateSeekBarTask.isCancelled())) {
             mUpdateSeekBarTask.cancel(true);
         }
@@ -291,7 +309,8 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
             }
         });
 
-        //Restart the UpdateSeekBarTask to update the progress bar every second.
+        // Now that mPlayer is not null, restart the UpdateSeekBarTask, unless of
+        //course we don't have a seek bar.
         if (mSeekBar != null) {
             startUpdatingSeekBar();
             Log.i(TAG, "UpdateSeekBarTask executed from startTrackPlayer");
@@ -318,7 +337,7 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
     @Override
     public void onStop() {
         Log.i(TAG, "onStop() called! Cancelling tasks and releasing mediaplayer");
-        if (mUpdateSeekBarTask != null) {
+        if ((mUpdateSeekBarTask != null) && (!mUpdateSeekBarTask.isCancelled())) {
             mUpdateSeekBarTask.cancel(true);
         }
 
@@ -366,15 +385,11 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
             toast.show();
             return;
         }
-        if (mUpdateSeekBarTask != null) {
-            mUpdateSeekBarTask.cancel(true);
-        }
-        if (mCursor != null) {
-            if (mCursor.moveToNext()) {
-                onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
-            } else if (mCursor.moveToFirst()) {
-                onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
-            }
+
+        if (mCursor.moveToNext()) {
+            onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
+        } else if (mCursor.moveToFirst()) {
+            onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
         }
     }
 
@@ -391,15 +406,10 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
             return;
         }
 
-        if (mUpdateSeekBarTask != null) {
-            mUpdateSeekBarTask.cancel(true);
-        }
-        if (mCursor != null) {
-            if (mCursor.moveToPrevious()) {
-                onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
-            } else if (mCursor.moveToLast()) {
-                onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
-            }
+        if (mCursor.moveToPrevious()) {
+            onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
+        } else if (mCursor.moveToLast()) {
+            onItemSelected(addTrackInfoFromCursor(mCursor), mCursor);
         }
     }
 
@@ -467,8 +477,26 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
         }
     }
 
-    //Standard getters and setters for member fields.
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String preferredCountry = Utility.getPreferredCountry(this);
+        // update the country using the fragment manager
+        if (preferredCountry != null && !preferredCountry.equals(mCountrySetting)) {
+            TopTracksFragment ff = (TopTracksFragment) getFragmentManager().findFragmentByTag(TOP_TRACKS_FRAGMENT_TAG);
+            if (null != ff) {
+                ff.onCountryChanged(preferredCountry);
+                Log.i(TAG, "TopTracksFragment.onCountryChanged called");
+            } else {
+                Log.i(TAG, "attempted, but failed to get TopTracksFragment by tag.");
+            }
+            mCountrySetting = preferredCountry;
+        }
+    }
+
+    //Standard getters and setters for member fields in case the sub-classing activites
+    //need to access them.
 
     public MediaPlayer getPlayer() {
         return mPlayer;

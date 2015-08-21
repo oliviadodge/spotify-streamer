@@ -10,16 +10,11 @@ public class TopTracksActivity extends TrackPlayerActivity {
     private static final String TAG = TopTracksActivity.class.getSimpleName();
     public static final String TOP_TRACKS_FRAGMENT_TAG = "TopTracksFragmentTag";
 
-    //Member fields
-    String mCountrySetting;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //Initialize member fields
-        mCountrySetting = Utility.getPreferredCountry(this);
         loadCursorFragment();
 
         handleSavedInstanceState(savedInstanceState);
@@ -54,20 +49,4 @@ public class TopTracksActivity extends TrackPlayerActivity {
                 .commit();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String preferredCountry = Utility.getPreferredCountry(this);
-        // update the country using the fragment manager
-        if (preferredCountry != null && !preferredCountry.equals(mCountrySetting)) {
-            TopTracksFragment ff = (TopTracksFragment) getFragmentManager().findFragmentByTag(TOP_TRACKS_FRAGMENT_TAG);
-            if (null != ff) {
-                ff.onCountryChanged(preferredCountry);
-                Log.i(TAG, "TopTracksFragment.onCountryChanged called");
-            } else {
-                Log.i(TAG, "attempted, but failed to get TopTracksFragment by tag.");
-            }
-            mCountrySetting = preferredCountry;
-        }
-    }
 }

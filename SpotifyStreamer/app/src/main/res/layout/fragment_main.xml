@@ -19,6 +19,7 @@
         />
 
     <ListView
+        style="@style/ListStyle"
         android:id="@+id/listview_artists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

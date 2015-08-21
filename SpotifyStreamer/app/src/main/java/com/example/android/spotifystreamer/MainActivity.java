@@ -14,17 +14,17 @@ public class MainActivity extends TrackPlayerActivity implements ArtistsFragment
 
     //Member Fields
     private boolean mTwoPane;
-    String mCountrySetting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mCountrySetting = Utility.getPreferredCountry(this);
-
         if (findViewById(R.id.fragment_top_tracks) != null){
+            //The application is launched on a tablet. Set mTwoPane true.
             mTwoPane = true;
 
+            //Load the fragment that will retain on rotation an instance
+            //of the top tracks cursor
             loadCursorFragment();
 
             android.util.Log.i(TAG, "onCreate called and mTwoPane is " + mTwoPane);
@@ -125,19 +125,4 @@ public class MainActivity extends TrackPlayerActivity implements ArtistsFragment
         getCursorFragment().setCursor(null);
         setSeekBar(null);
     }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-        String country = Utility.getPreferredCountry(this);
-        // update the location in our second pane using the fragment manager
-            if (country != null && !country.equals(mCountrySetting)) {
-            TopTracksFragment ff = (TopTracksFragment)getFragmentManager().findFragmentByTag(TOP_TRACKS_FRAGMENT_TAG);
-            if ( null != ff ) {
-                ff.onCountryChanged(country);
-            }
-            mCountrySetting = country;
-        }
-    }
-
 }

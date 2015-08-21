@@ -32,6 +32,7 @@ import com.example.android.spotifystreamer.data.DataContract;
 public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private  static final int ARTISTS_LOADER = 0;
+    private static final String KEY_SELECTED = "selected_position";
 
     private static final String[] ARTIST_COLUMNS = {
 
@@ -56,6 +57,7 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
     ArtistsAdapter mArtistsAdapter;
     String mSearchTerm;
     ListView mListView;
+    private int mPosition = ListView.INVALID_POSITION;
     Context mContext;
     LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks;
 
@@ -112,11 +114,18 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
                     String artistSpotifyId = cursor.getString(COL_ARTIST_SPOTIFY_ID);
                     ((Callback)getActivity()).onItemSelected(DataContract.TopTrackEntry
                     .buildTrackWithCountryAndArtistId(countrySetting, artistid), artistSpotifyId, artistName);
-
-
                 }
+                mPosition = position;
             }
         });
+
+        // If there's instance state, get the last position
+        if (savedInstanceState != null && savedInstanceState.containsKey(KEY_SELECTED)) {
+            // The listview probably hasn't been populated yet. Perform the
+            // swapout in onLoadFinished.
+            mPosition = savedInstanceState.getInt(KEY_SELECTED);
+        }
+
 
         final EditText editTextSearch = (EditText) rootView.findViewById(R.id.edittext_search_artist);
         editTextSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -130,12 +139,12 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
                     if (mSearchTerm != null) {
                         if (!mSearchTerm.equals(searchTerm)) {
                             mSearchTerm = searchTerm;
-                            ((Callback)getActivity()).onSearchTermChanged();
+                            ((Callback) getActivity()).onSearchTermChanged();
 
                         }
                     } else {
                         mSearchTerm = searchTerm;
-                        ((Callback)getActivity()).onSearchTermChanged();
+                        ((Callback) getActivity()).onSearchTermChanged();
                     }
 
                     SearchTermLab.get(mContext).setSearchTerm(mSearchTerm);
@@ -191,6 +200,9 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
         if (cursor.moveToFirst()) {
             Log.i(TAG, "onLoadFinished called and cursor.moveToFirst() is true. mArtistAdapter swaps with cursor");
             mArtistsAdapter.swapCursor(cursor);
+            if (mPosition != ListView.INVALID_POSITION) {
+                mListView.smoothScrollToPosition(mPosition);
+            }
         } else if (null != mSearchTerm) {    //if the cursor is null, this means that the artists for mSearchTerm have not been added to the db.
             Log.i(TAG, "onLoadFinished called, cursor is empty, and mSearchTerm is " + mSearchTerm + ". getArtists() called to start new FetchArtistsTask");
             getArtists();
@@ -217,6 +229,14 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
             Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
             toast.show();
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mPosition != ListView.INVALID_POSITION) {
+            outState.putInt(KEY_SELECTED, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 }
 

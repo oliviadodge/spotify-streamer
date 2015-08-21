@@ -24,13 +24,13 @@ import java.util.ArrayList;
 
 
 /**
- * A placeholder fragment containing a simple view.
+ * The TopTracksFragment will load the top 10 tracks for a selected artist and display them in a list view.
  */
 public class TopTracksFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int TRACKS_LOADER = 0;
     public static final String TRACKS_URI = "tracks_uri";
-
+    private static final String KEY_SELECTED = "selected_position";
 
     private static final String[] TRACK_COLUMNS = {
             DataContract.TopTrackEntry.COLUMN_TRACK_NAME,
@@ -78,6 +78,7 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
     String mArtistSpotifyId;
     Uri mUri;
     ListView mListView;
+    private int mPosition = ListView.INVALID_POSITION;
 
 
     public TopTracksFragment() {
@@ -119,9 +120,16 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
 
                     ((Callback) getActivity()).onItemSelected(trackInfo, cursor);
                 }
-
+                mPosition = position;
             }
         });
+
+        // If there's instance state, get the last position
+        if (savedInstanceState != null && savedInstanceState.containsKey(KEY_SELECTED)) {
+            // The listview probably hasn't been populated yet. Perform the
+            // swapout in onLoadFinished.
+            mPosition = savedInstanceState.getInt(KEY_SELECTED);
+        }
 
         return rootView;
     }
@@ -160,6 +168,9 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
         if (cursor.moveToFirst()) {
             Log.i(TAG, "onLoadFinished called and cursor.moveToFirst() is true. mTracksAdapter swaps with cursor");
             mTracksAdapter.swapCursor(cursor);
+                if (mPosition != ListView.INVALID_POSITION) {
+                    mListView.smoothScrollToPosition(mPosition);
+                }
         } else {    //if the cursor is null, this means that the data has not been added to the db.
             Log.i(TAG, "onLoadFinished called, and cursor is empty. getTracks() called to start new FetchTracksTask");
             getTracks();
@@ -197,6 +208,14 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
             mUri = updatedUri;
             getLoaderManager().restartLoader(TRACKS_LOADER, null, this);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mPosition != ListView.INVALID_POSITION) {
+            outState.putInt(KEY_SELECTED, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 }
 
