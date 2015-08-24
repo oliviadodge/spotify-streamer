@@ -6,6 +6,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.android.spotifystreamer.data.DataContract;
 
@@ -16,6 +17,7 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
+import retrofit.RetrofitError;
 
 /**
  * Created by oliviadodge on 8/4/2015.
@@ -86,6 +88,16 @@ public class FetchArtistsTask extends AsyncTask<String, Void, Void> {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
             inserted = mContext.getContentResolver().bulkInsert(DataContract.ArtistEntry.CONTENT_URI, cvArray);
+        } else {
+            // cVVector's size is zero meaning there were no artists found for that search term
+            //Insert a flag that will let the UI know this
+            ContentValues noArtistsFound = new ContentValues();
+            noArtistsFound.put(DataContract.ArtistEntry.COLUMN_SEARCH_KEY, searchTermId);
+            noArtistsFound.put(DataContract.ArtistEntry.COLUMN_ARTIST_NAME, DataContract.ArtistEntry.FLAG_NO_ARTISTS_FOUND);
+            noArtistsFound.put(DataContract.ArtistEntry.COLUMN_ARTIST_SPOTIFY_ID, DataContract.ArtistEntry.FLAG_NO_ARTISTS_FOUND);
+
+            mContext.getContentResolver()
+                    .insert(DataContract.ArtistEntry.CONTENT_URI, noArtistsFound);
         }
 
         Log.d(LOG_TAG, "FetchArtistsTask Complete. " + inserted + " Inserted");
@@ -102,12 +114,13 @@ public class FetchArtistsTask extends AsyncTask<String, Void, Void> {
 
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
-
-        ArtistsPager results = spotify.searchArtists(searchTerm);
-
-        artists = results.artists.items;
-
-        addArtists(artists, searchTerm);
+        try {
+            ArtistsPager searchResults = spotify.searchArtists(searchTerm);
+            artists = searchResults.artists.items;
+            addArtists(artists, searchTerm);
+        } catch(RetrofitError ex){
+            Toast.makeText(mContext, mContext.getResources().getString(R.string.toast_no_network_found), Toast.LENGTH_LONG).show();
+        }
 
         return null;
     }

@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.android.spotifystreamer.data.DataContract;
 
@@ -19,6 +20,7 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.RetrofitError;
 
 /**
  * Created by oliviadodge on 8/4/2015.
@@ -108,6 +110,17 @@ public class FetchTracksTask extends AsyncTask<String, Void, Void> {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
             inserted = mContext.getContentResolver().bulkInsert(DataContract.TopTrackEntry.CONTENT_URI, cvArray);
+        } else {
+            // cVVector's size is zero meaning there were no top tracks found for that artist
+            //Insert a flag that will let the UI know this
+            ContentValues noTracksFound = new ContentValues();
+            noTracksFound.put(DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY, countryId);
+            noTracksFound.put(DataContract.TopTrackEntry.COLUMN_ARTIST_KEY, Long.parseLong(artistId));
+            noTracksFound.put(DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID, DataContract.TopTrackEntry.FLAG_NO_TRACKS_FOUND);
+            noTracksFound.put(DataContract.TopTrackEntry.COLUMN_TRACK_NAME, DataContract.TopTrackEntry.FLAG_NO_TRACKS_FOUND);
+
+            mContext.getContentResolver()
+                    .insert(DataContract.TopTrackEntry.CONTENT_URI, noTracksFound);
         }
 
         Log.d(LOG_TAG, "FetchTracksTask Complete. " + inserted + " Inserted");
@@ -129,13 +142,13 @@ public class FetchTracksTask extends AsyncTask<String, Void, Void> {
 
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
-
-        Tracks results = spotify.getArtistTopTrack(artistSpotifyId, queryParams);
-
-        tracks = results.tracks;
-
-        addTracks(tracks, countrySetting, artistId);
-
+        try {
+            Tracks results = spotify.getArtistTopTrack(artistSpotifyId, queryParams);
+            tracks = results.tracks;
+            addTracks(tracks, countrySetting, artistId);
+        } catch(RetrofitError ex){
+            Toast.makeText(mContext, mContext.getResources().getString(R.string.toast_no_network_found), Toast.LENGTH_LONG).show();
+        }
         return null;
     }
 }

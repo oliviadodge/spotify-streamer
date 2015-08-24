@@ -4,7 +4,7 @@
 
     <!--Toasts-->
 
-    <string name="toast_no_artist_found">No artists found that match the given search term.</string>
+    <string name="toast_no_artist_found">No artists found that match the given search term. Please refine search.</string>
     <string name="toast_no_track_found">No top tracks found for that artist.</string>
     <string name="toast_track_not_playable">There is no preview for this track</string>
     <string name="toast_no_network_found">Can\'t find a network connection.</string>
@@ -28,11 +28,13 @@
     <string name="title_activity_track_player">TrackPlayerActivity</string>
     <string name="action_settings">Settings</string>
 
-    <!--TopTracksFragment-->
+    <!--TrackPlayerDialogFragment-->
 
     <string name="artist">No Name</string>
     <string name="album">Untitled</string>
     <string name="song">Untitled</string>
+    <string name="elapsed_time">0:00</string>
+    <string name="time_left">0:30</string>
 
     <!--Image Button Content Descriptions-->
 

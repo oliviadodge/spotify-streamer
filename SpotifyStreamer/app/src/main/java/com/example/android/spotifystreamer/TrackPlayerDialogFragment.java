@@ -44,6 +44,8 @@ public class TrackPlayerDialogFragment extends DialogFragment {
     TrackPlayerDialogListener mListener;
     TrackPlayerDialogFragment mDialog;
     ImageButton mPauseButton;
+    TextView mElapsedTimeTextView;
+    TextView mTimeLeftTextView;
 
     ArrayList<String> mTrackInfo;
 
@@ -93,6 +95,10 @@ public class TrackPlayerDialogFragment extends DialogFragment {
         TextView trackTextView = (TextView) view.findViewById(R.id.track_player_song);
         trackTextView.setText(mTrackInfo.get(TopTracksFragment.COL_TRACK_NAME));
 
+        mElapsedTimeTextView = (TextView) view.findViewById(R.id.track_player_elapsed_time);
+
+        mTimeLeftTextView = (TextView) view.findViewById(R.id.track_player_time_left);
+
         ImageView imageView = (ImageView) view.findViewById(R.id.track_player_album_art);
 
 
@@ -110,6 +116,11 @@ public class TrackPlayerDialogFragment extends DialogFragment {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mListener.onProgressChanged(seekBar, progress, fromUser);
+
+                double progressDouble = (double)progress/1000;
+                double timeLeftDouble = 30 - (double)progress/1000;
+                mElapsedTimeTextView.setText("0:" + String.format("%02d", Math.round(progressDouble)));
+                mTimeLeftTextView.setText("0:" + String.format("%02d", Math.round(timeLeftDouble)));
             }
 
             @Override

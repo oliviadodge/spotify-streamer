@@ -120,6 +120,13 @@ public class DataContract {
         // Url to artist image.
         public static final String COLUMN_ARTIST_IMAGE_URL = "artist_image_url";
 
+
+        // Flag that will be entered into the database if no artists are found for a particular
+        // search term. It will be inserted into the artist fields that require non null
+        // vaues (ie the artist spotify id and the artist name).
+        public static final String FLAG_NO_ARTISTS_FOUND = "no_artists_found";
+
+
         public static Uri buildArtistUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
@@ -180,6 +187,11 @@ public class DataContract {
 
         // Url to track preview
         public static final String COLUMN_TRACK_PREVIEW_URL = "track_preview_url";
+
+        // Flag that will be entered into the database if no tracks are found for a particular
+        // artist and country. It will be inserted into the track fields that require non null
+        // vaues (ie the track spotify id and the track name).
+        public static final String FLAG_NO_TRACKS_FOUND = "no_tracks_found";
 
 
         public static Uri buildTrackUri(long id) {

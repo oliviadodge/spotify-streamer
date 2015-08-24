@@ -18,6 +18,8 @@ import com.squareup.picasso.Picasso;
  */
 public class TracksAdapter extends CursorAdapter {
 
+
+    private static String TAG = TracksAdapter.class.getSimpleName();
     /**
      * Cache of the children views for track list item.
      */
@@ -39,7 +41,7 @@ public class TracksAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        int layoutId;
+        int layoutId = -1;
 
         layoutId = R.layout.list_item_track;
 

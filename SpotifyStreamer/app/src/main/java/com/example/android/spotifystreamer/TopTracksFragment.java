@@ -38,6 +38,7 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
             DataContract.TopTrackEntry.COLUMN_ALBUM_NAME,
             DataContract.TopTrackEntry.COLUMN_ALBUM_IMAGE_URL,
             DataContract.TopTrackEntry.COLUMN_TRACK_PREVIEW_URL,
+            DataContract.TopTrackEntry.COLUMN_TRACK_SPOTIFY_ID,
             DataContract.TopTrackEntry.TABLE_NAME + "." + DataContract.TopTrackEntry._ID,
             DataContract.TopTrackEntry.COLUMN_ARTIST_KEY,
             DataContract.TopTrackEntry.COLUMN_COUNTRY_KEY,
@@ -54,6 +55,7 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
     public static final int COL_ALBUM_NAME = 2;
     public static final int COL_ALBUM_IMAGE_URL = 3;
     public static final int COL_TRACK_PREVIEW_URL = 4;
+    public static final int COL_TRACK_SPOTIFY_ID = 5;
 
 
     /**
@@ -162,12 +164,22 @@ public class TopTracksFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        if (cursor.moveToFirst()) {
+        if ((cursor.moveToFirst()) && (cursor.getCount() == 1)) {
+            // Check to see if there is a no tracks flag in the cursor indicating that
+            // there are no top tracks for the requested artist.
+            String flag = cursor.getString(COL_TRACK_SPOTIFY_ID);
+            if (flag.equals(DataContract.TopTrackEntry.FLAG_NO_TRACKS_FOUND)) {
+                Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_track_found), Toast.LENGTH_LONG);
+                toast.show();
+            } else {
+                mTracksAdapter.swapCursor(cursor);
+            }
+        } else if (cursor.moveToFirst()) {
             Log.i(TAG, "onLoadFinished called and cursor.moveToFirst() is true. mTracksAdapter swaps with cursor");
             mTracksAdapter.swapCursor(cursor);
-                if (mPosition != ListView.INVALID_POSITION) {
-                    mListView.smoothScrollToPosition(mPosition);
-                }
+            if (mPosition != ListView.INVALID_POSITION) {
+                mListView.smoothScrollToPosition(mPosition);
+            }
         } else {    //if the cursor is null, this means that the data has not been added to the db.
             Log.i(TAG, "onLoadFinished called, and cursor is empty. getTracks() called to start new FetchTracksTask");
             getTracks();

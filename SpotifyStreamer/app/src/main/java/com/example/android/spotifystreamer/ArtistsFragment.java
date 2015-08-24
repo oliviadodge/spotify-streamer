@@ -192,7 +192,17 @@ public class ArtistsFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 
-        if (cursor.moveToFirst()) {
+        if ((cursor.moveToFirst()) && (cursor.getCount() == 1)) {
+            // Check to see if there is a no artists flag in the cursor indicating that
+            // there are no artists for the given search term.
+            String flag = cursor.getString(COL_ARTIST_SPOTIFY_ID);
+            if (flag.equals(DataContract.ArtistEntry.FLAG_NO_ARTISTS_FOUND)) {
+                Toast toast = Toast.makeText(getActivity(), getString(R.string.toast_no_artist_found), Toast.LENGTH_LONG);
+                toast.show();
+            } else {
+                mArtistsAdapter.swapCursor(cursor);
+            }
+        } else if (cursor.moveToFirst()) {
             Log.i(TAG, "onLoadFinished called and cursor.moveToFirst() is true. mArtistAdapter swaps with cursor");
             mArtistsAdapter.swapCursor(cursor);
             if (mPosition != ListView.INVALID_POSITION) {
