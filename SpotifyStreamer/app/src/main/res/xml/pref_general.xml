@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditTextPreference
+    <ListPreference
         android:title="@string/pref_country_label"
         android:key="@string/pref_country_key"
         android:defaultValue="@string/pref_country_default"
-        android:textAllCaps="true"
-        android:singleLine="true"
-        android:maxLength="2"
+        android:summary="@string/pref_country_summary"
+        android:entries="@array/countryCodeEntries"
+        android:entryValues="@array/countryCodesValues"
         />
 
 </PreferenceScreen>

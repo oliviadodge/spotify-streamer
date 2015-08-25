@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="countryCodeEntries">
+        <item name="AU">Australia - AU</item>
+        <item name="AT">Austria - AT</item>
+        <item name="SG">Singapore - SG</item>
+        <item name="GB">United Kingdom - GB</item>
+        <item name="US">United States - US</item>
+
+    </string-array>
+    <string-array name="countryCodesValues">
+        <item name="AU">AU</item>
+        <item name="AT">AT</item>
+        <item name="SG">SG</item>
+        <item name="GB">GB</item>
+        <item name="US">US</item>
+
+    </string-array>
+
+</resources>

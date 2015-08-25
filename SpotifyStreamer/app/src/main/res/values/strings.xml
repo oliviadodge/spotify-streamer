@@ -14,6 +14,9 @@
     <!-- Label for the country preference [CHAR LIMIT=30] -->
     <string name="pref_country_label">Country</string>
 
+    <!-- Summary for the country preference [CHAR LIMIT=30] -->
+    <string name="pref_country_summary">Enter a country to search for top tracks</string>
+
     <!-- Key name for storing country in SharedPreferences [CHAR LIMIT=NONE] -->
     <string name="pref_country_key" translatable="false">country</string>
 
