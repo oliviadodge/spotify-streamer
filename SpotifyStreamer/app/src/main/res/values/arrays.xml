@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="countryCodeEntries">
-        <item name="AD">Andorra - AD</item>
-        <item name="AR">Argentina - AR</item>
         <item name="AU">Australia - AU</item>
         <item name="AT">Austria - AT</item>
-        <item name="BE">Belgium - BE</item>
-        <item name="BO">Bolivia - BO</item>
         <item name="BR">Brazil - BR</item>
-        <item name="BG">Bulgaria - BG</item>
         <item name="DE">Germany - DE</item>
-        <item name="MY">Malaysia - MY</item>
         <item name="MX">Mexico - MX</item>
         <item name="PH">Philippines - PH</item>
         <item name="SG">Singapore - SG</item>
@@ -20,16 +14,10 @@
 
     </string-array>
     <string-array name="countryCodesValues">
-        <item name="AD">Andorra - AD</item>
-        <item name="AR">Argentina - AR</item>
         <item name="AU">AU</item>
         <item name="AT">AT</item>
-        <item name="BE">Belgium - BE</item>
-        <item name="BO">Bolivia - BO</item>
         <item name="BR">BR</item>
-        <item name="BG">Bulgaria - BG</item>
         <item name="DE">DE</item>
-        <item name="MY">Malaysia - MY</item>
         <item name="MX">MX</item>
         <item name="PH">PH</item>
         <item name="SG">SG</item>
