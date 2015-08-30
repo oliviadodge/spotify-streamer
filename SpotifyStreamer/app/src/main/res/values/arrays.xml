@@ -3,17 +3,53 @@
     <string-array name="countryCodeEntries">
         <item name="AU">Australia - AU</item>
         <item name="AT">Austria - AT</item>
+        <item name="BD">Bangladesh - BD</item>
+        <item name="BR">Brazil - BR</item>
+        <item name="CN">China - CN</item>
+        <item name="EG">Egypt - EG</item>
+        <item name="ET">Ethiopia - ET</item>
+        <item name="DE">Germany - DE</item>
+        <item name="IN">India - IN</item>
+        <item name="ID">Indonesia - ID</item>
+        <item name="IR">Iran - IR</item>
+        <item name="JP">Japan - JP</item>
+        <item name="MX">Mexico - MX</item>
+        <item name="NG">Nigeria - NG</item>
+        <item name="PK">Pakistan - PK</item>
+        <item name="PH">Philippines - PH</item>
+        <item name="RU">Russia - RU</item>
         <item name="SG">Singapore - SG</item>
+        <item name="TH">Thailand - TH</item>
+        <item name="TR">Turkey - TR</item>
         <item name="GB">United Kingdom - GB</item>
         <item name="US">United States - US</item>
+        <item name="VN">Vietnam - VN</item>
 
     </string-array>
     <string-array name="countryCodesValues">
         <item name="AU">AU</item>
         <item name="AT">AT</item>
+        <item name="BD">BD</item>
+        <item name="BR">BR</item>
+        <item name="CN">CN</item>
+        <item name="EG">EG</item>
+        <item name="ET">ET</item>
+        <item name="DE">DE</item>
+        <item name="IN">IN</item>
+        <item name="ID">ID</item>
+        <item name="IR">IR</item>
+        <item name="JP">JP</item>
+        <item name="MX">MX</item>
+        <item name="NG">NG</item>
+        <item name="PK">PK</item>
+        <item name="PH">PH</item>
+        <item name="RU">RU</item>
         <item name="SG">SG</item>
+        <item name="TH">TH</item>
+        <item name="TR">TR</item>
         <item name="GB">GB</item>
         <item name="US">US</item>
+        <item name="VN">VN</item>
 
     </string-array>
 
