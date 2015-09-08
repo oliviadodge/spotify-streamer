@@ -18,15 +18,17 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -36,7 +38,6 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -58,17 +59,21 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
     MediaPlayer mPlayer;
     Context mContext;
     String mNowPlayingUrl;
+    int mCurrentPosition;
     boolean mIsPaused;
     Cursor mCursor;
     SeekBar mSeekBar;
     UpdateSeekBarTask mUpdateSeekBarTask;
     CursorFragment mCursorFragment;
     String mCountrySetting;
+    MusicService mService;
+    boolean mBound = false;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         mContext = this;
         mCountrySetting = Utility.getPreferredCountry(this);
@@ -132,7 +137,7 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
             //2. The dialog had been dismissed but a track was playing or had been paused (ie mNowPlayingUrl is not null)
             if ((dialogFragmentArgs != null) || (mNowPlayingUrl != null)) {
                 //Get a reference to the url, position, and state of the track that was playing when the activity was recreated.
-                int currentPosition = savedInstanceState.getInt(KEY_CURRENT_PLAYBACK_POSITION, 0);
+                mCurrentPosition = savedInstanceState.getInt(KEY_CURRENT_PLAYBACK_POSITION, 0);
                 mIsPaused = savedInstanceState.getBoolean(KEY_IS_TRACK_PAUSED, false);
 
                 //If the track dialog was showing and paused make sure the dialog gets this info so it can update the playback button
@@ -142,13 +147,42 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
                 }
 
                 //If the track hadn't finished playing or there was a dialog showing, mNowPlayingUrl will not be null.
-                //Restart the track player with the info we have.
-                if (mNowPlayingUrl != null) {
-                    startTrackPlayer(mNowPlayingUrl, currentPosition, mIsPaused);
-                }
+                //Restart the track player with the info we have. So if mNowPlayingUrl is not null,
+                //when the service connection is established, restart the media player.
+                //See the mConnection implementation for this logiic.
+
             }
         }
+
+        // Bind to MusicService
+        Intent intent = new Intent(this, MusicService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
+
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            Log.i(TAG, "onServiceConnected() called and mUrlNowPlaying is " + mNowPlayingUrl);
+            // We've bound to MusicService, cast the IBinder and get MusicService instance
+            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+            mService = binder.getService();
+            mBound = true;
+
+            if (mNowPlayingUrl != null) {
+                mPlayer = mService.getMediaPlayer();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
 
     //Method required by TopTracksFragment.Callback to start up the track player dialog
     //when a track is selected from the list
@@ -246,68 +280,11 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
             mUpdateSeekBarTask.cancel(true);
         }
 
-        if ((mPlayer != null)) {
-            mPlayer.release();
-            mPlayer = null;
-        }
-
-        mPlayer = new MediaPlayer();
-        //Give the retained fragment a reference to mPlayer so it can be saved on rotation.
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-        //If there is no available track preview url, display a toast.
-        if (trackPreviewUrl == null) {
-            Toast toast = Toast.makeText(mContext, getString(R.string.toast_track_not_playable), Toast.LENGTH_LONG);
-            toast.show();
-        }
-        try {
-            mPlayer.setDataSource(trackPreviewUrl);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //mPlayer will be prepared on a background thread. So we
-        //set a listener on it here to start playing once it is prepared.
-        mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-                mPlayer = mediaPlayer;
-                if (currentPosition > 0) {
-                    mediaPlayer.seekTo(currentPosition);
-                }
-                if (checkNetworkConnection() && !isPaused) {
-                    mPlayer.start();
-                    mIsPaused = false;
-                    Log.i(TAG, "mPlayer prepared and started");
-                } else if (!checkNetworkConnection()) {
-                    Toast toast = Toast.makeText(mContext, getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
-                    toast.show();
-                }
-            }
-        });
-
-        //Prepare MediaPlayer if there is a network connection
-        if (checkNetworkConnection()) {
-            mPlayer.prepareAsync();
+        if (mBound) {
+            mPlayer = mService.playTrack(trackPreviewUrl, currentPosition, isPaused);
         } else {
-            Toast toast = Toast.makeText(mContext, getString(R.string.toast_no_network_found), Toast.LENGTH_LONG);
-            toast.show();
+            Log.i(TAG, "Activity not bound to service");
         }
-
-        //Set the onCompletionListener here so that we can show the play button (for the user to replay the track) after it finishes.
-        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                DialogFragment dialogFragment = (DialogFragment) getFragmentManager().findFragmentByTag(TRACK_PLAYER_DIALOG_FRAGMENT_TAG);
-                if (dialogFragment != null) {
-                    ImageButton playButton = (ImageButton) dialogFragment.getDialog().findViewById(R.id.track_player_pause);
-                    playButton.setSelected(true);
-                    mIsPaused = true;
-                } else {
-                    mPlayer.reset();
-                    mNowPlayingUrl = null;
-                }
-            }
-        });
 
         // Now that mPlayer is not null, restart the UpdateSeekBarTask, unless of
         //course we don't have a seek bar.
@@ -339,12 +316,6 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
         Log.i(TAG, "onStop() called! Cancelling tasks and releasing mediaplayer");
         if ((mUpdateSeekBarTask != null) && (!mUpdateSeekBarTask.isCancelled())) {
             mUpdateSeekBarTask.cancel(true);
-        }
-
-        if (mPlayer != null) {
-
-            mPlayer.release();
-            mPlayer = null;
         }
 
         super.onStop();
@@ -492,6 +463,17 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
                 Log.i(TAG, "attempted, but failed to get TopTracksFragment by tag.");
             }
             mCountrySetting = preferredCountry;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
         }
     }
 

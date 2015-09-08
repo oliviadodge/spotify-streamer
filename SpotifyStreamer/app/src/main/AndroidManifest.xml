@@ -36,6 +36,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.android.spotifystreamer.SettingsActivity" />
         </activity>
+        <service android:name=".MusicService" />
+
 
         <provider
             android:authorities="@string/content_authority"
