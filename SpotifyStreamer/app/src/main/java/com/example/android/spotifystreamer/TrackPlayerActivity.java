@@ -155,8 +155,8 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
         }
 
         // Bind to MusicService
-        Intent intent = new Intent(this, MusicService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        Intent startIntent = new Intent(this, MusicService.class);
+        bindService(startIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
 
@@ -174,6 +174,9 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
 
             if (mNowPlayingUrl != null) {
                 mPlayer = mService.getMediaPlayer();
+                if (mSeekBar != null) {
+                    startUpdatingSeekBar();
+                }
             }
         }
 
@@ -285,6 +288,11 @@ public abstract class TrackPlayerActivity extends ActionBarActivity implements T
         } else {
             Log.i(TAG, "Activity not bound to service");
         }
+
+        //Start the service so that the notification will show in drawer
+        Intent startIntent = new Intent(this, MusicService.class);
+        startIntent.setAction(MusicService.STARTFOREGROUND_ACTION);
+        startService(startIntent);
 
         // Now that mPlayer is not null, restart the UpdateSeekBarTask, unless of
         //course we don't have a seek bar.

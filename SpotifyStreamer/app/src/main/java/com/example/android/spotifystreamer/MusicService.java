@@ -1,8 +1,12 @@
 package com.example.android.spotifystreamer;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
@@ -10,6 +14,7 @@ import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,6 +25,17 @@ import java.io.IOException;
  */
 public class MusicService extends Service implements MediaPlayer.OnErrorListener {
     private static final String TAG = MusicService.class.getSimpleName();
+
+    public static String MAIN_ACTION = "com.example.android.spotifystreamer.action.main";
+    public static String PREV_ACTION = "com.example.android.spotifystreamer.action.prev";
+    public static String PLAY_ACTION = "com.example.android.spotifystreamer.action.play";
+    public static String NEXT_ACTION = "com.example.android.spotifystreamer.action.next";
+    public static String STARTFOREGROUND_ACTION = "com.example.android.spotifystreamer.startforeground";
+    public static String STOPFOREGROUND_ACTION = "com.example.android.spotifystreamer.stopforeground";
+
+    public static int MUSIC_SERVICE = 101;
+
+
     MediaPlayer mMediaPlayer;
     //Binder given to clients
     private final IBinder mBinder = new MusicBinder();
@@ -105,38 +121,41 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
         return mBinder;
     }
 
+    //The following code in the onStartCommand method was taken and modified
+    // from http://www.truiton.com/2014/10/android-foreground-service-example/
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent.getAction().equals(STARTFOREGROUND_ACTION)) {
+            Log.i(TAG, "Received Start Foreground Intent ");
             Intent notificationIntent = new Intent(this, MainActivity.class);
-            notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
+            notificationIntent.setAction(MAIN_ACTION);
             notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                     notificationIntent, 0);
 
-            Intent previousIntent = new Intent(this, ForegroundService.class);
-            previousIntent.setAction(Constants.ACTION.PREV_ACTION);
+            Intent previousIntent = new Intent(this, MusicService.class);
+            previousIntent.setAction(PREV_ACTION);
             PendingIntent ppreviousIntent = PendingIntent.getService(this, 0,
                     previousIntent, 0);
 
-            Intent playIntent = new Intent(this, ForegroundService.class);
-            playIntent.setAction(Constants.ACTION.PLAY_ACTION);
+            Intent playIntent = new Intent(this, MusicService.class);
+            playIntent.setAction(PLAY_ACTION);
             PendingIntent pplayIntent = PendingIntent.getService(this, 0,
                     playIntent, 0);
 
-            Intent nextIntent = new Intent(this, ForegroundService.class);
-            nextIntent.setAction(Constants.ACTION.NEXT_ACTION);
+            Intent nextIntent = new Intent(this, MusicService.class);
+            nextIntent.setAction(NEXT_ACTION);
             PendingIntent pnextIntent = PendingIntent.getService(this, 0,
                     nextIntent, 0);
 
             Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                    R.drawable.truiton_short);
+                    R.drawable.default_placeholder);
 
             Notification notification = new NotificationCompat.Builder(this)
-                    .setContentTitle("Truiton Music Player")
-                    .setTicker("Truiton Music Player")
-                    .setContentText("My Music")
-                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle("Spotify Streamer")
+                    .setTicker("Spotify Streamer")
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setLargeIcon(
                             Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContentIntent(pendingIntent)
@@ -147,17 +166,17 @@ public class MusicService extends Service implements MediaPlayer.OnErrorListener
                             pplayIntent)
                     .addAction(android.R.drawable.ic_media_next, "Next",
                             pnextIntent).build();
-            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+            startForeground(MUSIC_SERVICE,
                     notification);
-        } else if (intent.getAction().equals(Constants.ACTION.PREV_ACTION)) {
-            Log.i(LOG_TAG, "Clicked Previous");
-        } else if (intent.getAction().equals(Constants.ACTION.PLAY_ACTION)) {
-            Log.i(LOG_TAG, "Clicked Play");
-        } else if (intent.getAction().equals(Constants.ACTION.NEXT_ACTION)) {
-            Log.i(LOG_TAG, "Clicked Next");
+        } else if (intent.getAction().equals(PREV_ACTION)) {
+            Log.i(TAG, "Clicked Previous");
+        } else if (intent.getAction().equals(PLAY_ACTION)) {
+            Log.i(TAG, "Clicked Play");
+        } else if (intent.getAction().equals(NEXT_ACTION)) {
+            Log.i(TAG, "Clicked Next");
         } else if (intent.getAction().equals(
-                Constants.ACTION.STOPFOREGROUND_ACTION)) {
-            Log.i(LOG_TAG, "Received Stop Foreground Intent");
+                STOPFOREGROUND_ACTION)) {
+            Log.i(TAG, "Received Stop Foreground Intent");
             stopForeground(true);
             stopSelf();
         }
