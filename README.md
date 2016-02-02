@@ -4,10 +4,11 @@ Features include: artists and top tracks list fragments; preview player fragment
 
 ![](https://github.com/oliviadodge/spotify-streamer/blob/master/Screenshots/Screenshot_2016-01-29-15-44-57.png)
 
-![](https://github.com/oliviadodge/spotify-streamer/blob/master/Screenshots/Screenshot_2016-01-29-15-45-06.png)
-
 ![](https://github.com/oliviadodge/spotify-streamer/blob/master/Screenshots/Screenshot_2016-01-29-15-45-14.png)
 
 ![](https://github.com/oliviadodge/spotify-streamer/blob/master/Screenshots/Screenshot_2016-01-29-15-45-30.png)
 
 ![](https://github.com/oliviadodge/spotify-streamer/blob/master/Screenshots/Screenshot_2016-01-29-15-45-59.png)
+
+![](https://github.com/oliviadodge/spotify-streamer/blob/master/Screenshots/Screenshot_2016-01-29-15-45-06.png)
+
